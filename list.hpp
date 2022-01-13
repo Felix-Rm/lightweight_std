@@ -158,19 +158,8 @@ class list {
     }
 
     void push_back(const T &elt) {
-        bool was_empty = m_back == nullptr;
-        list_item_t *new_item = was_empty ? m_back : m_back->next;
-
-        new_item = new list_item_t();
-        new_item->elt = elt;
-
-        m_size++;
-
-        if (!was_empty) {
-            new_item->prev = m_back;
-            m_back->next = new_item;
-        }
-        m_back = new_item;
+        insert(nullptr, elt);
+    }
 
         if (m_front == nullptr) m_front = m_back;
     }
