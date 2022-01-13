@@ -1,5 +1,12 @@
 #pragma once
 
+#ifdef ARDUINO
+#include "Arduino.h"
+#else
+#include <cstddef>
+#include <cstdint>
+#endif
+
 namespace lw_std {
 
 // lw_std implementation of remove_reference (used for lw_std::move)

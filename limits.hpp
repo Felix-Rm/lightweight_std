@@ -1,12 +1,6 @@
 #pragma once
 
-#ifdef ARDUINO
-#include "Arduino.hpp"
-#undef max
-#undef min
-#else
-#include <cstdint>
-#endif
+#include "utility.hpp"
 
 namespace lw_std {
 

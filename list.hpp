@@ -1,14 +1,6 @@
 #pragma once
 
-#include <cstddef>
-
 #include "utility.hpp"
-
-#ifdef ARDUINO
-#include "Arduino.hpp"
-#else
-#include <cstring>
-#endif
 
 namespace lw_std {
 
