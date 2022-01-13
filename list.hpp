@@ -175,6 +175,35 @@ class list {
         if (m_front == nullptr) m_front = m_back;
     }
 
+    void insert(const iterator &it, const T &elt) {
+        list_item_t *new_item = new list_item_t();
+
+        new_item->elt = elt;
+
+        // if we are inserting before end, we are the new back and have no next elt
+        if (it.p == nullptr) {
+            if (m_back) {
+                new_item->prev = m_back;
+                m_back->next = new_item;
+            }
+
+            m_back = new_item;
+        } else {
+            if (it.p->prev) {
+                new_item->prev = it.p->prev;
+                it.p->prev->next = new_item;
+            }
+
+            new_item->next = it.p;
+            it.p->prev = new_item;
+        }
+
+        if (it.p == m_front || m_front == nullptr)
+            m_front = new_item;
+
+        m_size++;
+    }
+
     void pop_back() {
         if (m_back == nullptr) return;
 
