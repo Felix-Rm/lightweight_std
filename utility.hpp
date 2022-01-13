@@ -39,6 +39,7 @@ void swap(T& a, T& b) {
     b = move(temp);
 }
 
+#ifndef ARDUINO
 // lw_std implementation of std::max
 template <typename T>
 constexpr T max(const T& a, const T& b) {
@@ -50,4 +51,5 @@ template <typename T>
 constexpr T min(const T& a, const T& b) {
     return a < b ? a : b;
 }
+#endif
 }  // namespace lw_std
