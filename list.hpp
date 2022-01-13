@@ -161,7 +161,11 @@ class list {
         insert(nullptr, elt);
     }
 
-        if (m_front == nullptr) m_front = m_back;
+    void push_front(const T &elt) {
+        if (m_size == 0)
+            push_back(elt);
+        else
+            insert(m_front, elt);
     }
 
     void insert(const iterator &it, const T &elt) {
