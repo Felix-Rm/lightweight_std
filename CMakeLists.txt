@@ -1,8 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.0)
 enable_testing()
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -Wall")
+set_property(GLOBAL PROPERTY CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CXX_STANDARD 17)
+set(GCC_COVERAGE_COMPILE_FLAGS "-std=17")
+
+
+add_subdirectory(tests)
 
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/" #source directory
@@ -14,9 +18,3 @@ install(DIRECTORY "${CMAKE_SOURCE_DIR}/" #source directory
         PATTERN ".*" EXCLUDE
         PATTERN "**CMakeFiles**" EXCLUDE)
 
-project(lw_std_test_suite)
-
-add_executable(lw_std_test_suite tests/testing.cpp)
-target_link_libraries(lw_std_test_suite PRIVATE ftest)
-
-add_test(test_suite lw_std_test_suite)
