@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ftest/test_logging.hpp>
-
-#include "../queue.hpp"
+#include "ftest/test_logging.hpp"
+#include "queue.hpp"
 
 class TestLwQueue {
    public:

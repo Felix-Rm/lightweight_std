@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ftest/test_logging.hpp>
-
-#include "../list.hpp"
+#include "ftest/test_logging.hpp"
+#include "list.hpp"
 
 class TestLwList {
    public:

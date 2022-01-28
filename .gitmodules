@@ -1,3 +1,4 @@
 [submodule "tests/ftest"]
 	path = tests/ftest
 	url = https://github.com/Felix-Rm/ftest.git
+	branch = master

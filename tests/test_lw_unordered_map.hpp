@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ftest/test_logging.hpp>
-
-#include "../unordered_map.hpp"
+#include "ftest/test_logging.hpp"
+#include "unordered_map.hpp"
 
 class TestLwUnorderedMap {
    public:

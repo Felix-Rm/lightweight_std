@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ftest/test_logging.hpp>
-
-#include "../vector.hpp"
+#include "ftest/test_logging.hpp"
+#include "vector.hpp"
 
 class TestLwVector {
    public:

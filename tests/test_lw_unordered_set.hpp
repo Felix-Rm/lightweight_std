@@ -1,8 +1,7 @@
 #pragma once
 
-#include <ftest/test_logging.hpp>
-
-#include "../unordered_set.hpp"
+#include "ftest/test_logging.hpp"
+#include "unordered_set.hpp"
 
 class TestLwUnorderedSet {
    public:
