@@ -3,9 +3,9 @@
 #include "utility.hpp"
 
 #ifdef ARDUINO
-#include "Arduino.hpp"
+#    include "Arduino.hpp"
 #else
-#include <cstring>
+#    include <cstring>
 #endif
 
 namespace lw_std {
@@ -16,13 +16,13 @@ class vector {
    public:
     class iterator {
        private:
-        T *p;
+        T* p;
 
        public:
-        iterator(T *x) : p(x) {}
-        iterator(const iterator &mit) : p(mit.p) {}
+        iterator(T* x) : p(x) {}
+        iterator(const iterator& mit) : p(mit.p) {}
 
-        iterator &operator++() {
+        iterator& operator++() {
             ++p;
             return *this;
         }
@@ -39,25 +39,25 @@ class vector {
             return tmp;
         }
 
-        bool operator==(const T *&rhs) const { return p == rhs; }
+        bool operator==(const T*& rhs) const { return p == rhs; }
 
-        bool operator==(const iterator &rhs) const { return p == rhs.p; }
-        bool operator!=(const iterator &rhs) const { return p != rhs.p; }
+        bool operator==(const iterator& rhs) const { return p == rhs.p; }
+        bool operator!=(const iterator& rhs) const { return p != rhs.p; }
 
-        T &operator*() { return *p; }
-        T *operator->() { return p; }
+        T& operator*() { return *p; }
+        T* operator->() { return p; }
 
-        const T &operator*() const { return *p; };
-        const T *operator->() const { return p; };
+        const T& operator*() const { return *p; };
+        const T* operator->() const { return p; };
     };
 
    protected:
-    T *m_data = nullptr;
+    T* m_data = nullptr;
 
     size_t m_cursor = 0;
     size_t m_size = 0;
 
-    static constexpr bool match_function(const T &a, const T &b) {
+    static constexpr bool match_function(const T& a, const T& b) {
         return a == b;
     }
 
@@ -68,7 +68,7 @@ class vector {
 
     void grow() {
         size_t new_size = m_size + 8;
-        T *new_data = new T[new_size];
+        T* new_data = new T[new_size];
 
         for (size_t i = 0; i < m_cursor; i++)
             new_data[i] = (T &&) m_data[i];
@@ -81,14 +81,14 @@ class vector {
     }
 
     template <typename Arg>
-    iterator find_helper(const Arg &elt, bool (*is_match)(const T &, const Arg &)) const {
+    iterator find_helper(const Arg& elt, bool (*is_match)(const T&, const Arg&)) const {
         for (size_t i = 0; i < m_cursor; i++)
             if (is_match(m_data[i], elt))
                 return iterator(&m_data[i]);
         return end();
     }
 
-    iterator erase_helper(const iterator &it) {
+    iterator erase_helper(const iterator& it) {
         size_t index = &(*it) - m_data;
         shift_left(index, 1);
         m_cursor--;
@@ -96,7 +96,7 @@ class vector {
         return it;
     }
 
-    void copy_from(const vector<T> &other) {
+    void copy_from(const vector<T>& other) {
         if (m_size)
             delete[] m_data;
 
@@ -108,7 +108,7 @@ class vector {
             m_data[i] = (T &&) other.m_data[i];
     }
 
-    void move_from(vector<T> &&other) {
+    void move_from(vector<T>&& other) {
         swap(m_data, other.m_data);
         swap(m_cursor, other.m_cursor);
         swap(m_size, other.m_size);
@@ -121,20 +121,20 @@ class vector {
 
     vector() = default;
 
-    vector(vector<T> &other) {
+    vector(vector<T>& other) {
         copy_from(other);
     };
 
-    vector(vector<T> &&other) {
+    vector(vector<T>&& other) {
         move_from(other);
     };
 
-    vector<T> &operator=(const vector<T> &other) {
+    vector<T>& operator=(const vector<T>& other) {
         copy_from(other);
         return *this;
     }
 
-    vector<T> &operator=(vector<T> &&other) {
+    vector<T>& operator=(vector<T>&& other) {
         move_from(other);
         return *this;
     }
@@ -145,17 +145,17 @@ class vector {
     iterator begin() const { return iterator(&m_data[0]); };
     iterator end() const { return iterator(&m_data[m_cursor]); };
 
-    T &front() const { return m_data[0]; };
-    T &back() const { return m_data[m_cursor - 1]; };
+    T& front() const { return m_data[0]; };
+    T& back() const { return m_data[m_cursor - 1]; };
 
-    T &operator[](size_t index) { return m_data[index]; };
+    T& operator[](size_t index) { return m_data[index]; };
 
     void clear() {
         if (m_size)
             delete[] m_data;
     }
 
-    void push_back(const T &elt) {
+    void push_back(const T& elt) {
         if (m_cursor == m_size)
             grow();
         m_data[m_cursor++] = elt;
@@ -174,9 +174,9 @@ class vector {
         }
     }
 
-    iterator find(const T &elt) const { return find_helper(elt, match_function); }
+    iterator find(const T& elt) const { return find_helper(elt, match_function); }
 
-    iterator erase(const iterator &it) { return erase_helper(it); }
+    iterator erase(const iterator& it) { return erase_helper(it); }
 };
 
 }  // namespace lw_std

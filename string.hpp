@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef ARDUINO
-#include "Arduino.hpp"
+#    include "Arduino.hpp"
 #else
-#include <string>
+#    include <string>
 #endif
 
 namespace lw_std {

@@ -14,7 +14,7 @@ class unordered_map : private list<pair<T, U>> {
     using list<pair<T, U>>::back;
     using list<pair<T, U>>::front;
 
-    static constexpr bool match_function(const pair<T, U> &a, const T &b) {
+    static constexpr bool match_function(const pair<T, U>& a, const T& b) {
         return a.first == b;
     }
 
@@ -29,12 +29,12 @@ class unordered_map : private list<pair<T, U>> {
     using list<pair<T, U>>::erase;
 
     // find element in map by key
-    iterator find(const T &key) const {
+    iterator find(const T& key) const {
         return this->find_helper(key, match_function);
     }
 
     // erase element from map by key
-    size_t erase(const T &key) {
+    size_t erase(const T& key) {
         auto res = find(key);
 
         if (res == end()) {
@@ -46,14 +46,14 @@ class unordered_map : private list<pair<T, U>> {
     }
 
     // insert element into map
-    void insert(const pair<T, U> &elt) {
+    void insert(const pair<T, U>& elt) {
         auto res = find(elt.first);
         if (res == end())
             push_back(elt);
     }
 
     //  element acces with operator[]
-    U &operator[](const T &key) {
+    U& operator[](const T& key) {
         auto res = find(key);
         if (res != end())
             return res->second;
