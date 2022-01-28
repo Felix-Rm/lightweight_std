@@ -11,12 +11,17 @@ class list {
     struct list_item;
     typedef struct list_item {
         T elt;
-        list_item *next;
-        list_item *prev;
+        list_item* next;
+        list_item* prev;
     } list_item_t;
 
-    static list_item_t *successor(list_item_t *item, size_t n) {
-        for (size_t i = 0; i < n && item->next; ++i) item = item->next;
+    static list_item_t* successor(list_item_t* item, size_t n) {
+        for (size_t i = 0; i < n && item; ++i) item = item->next;
+        return item;
+    }
+
+    static list_item_t* predecessor(list_item_t* item, size_t n) {
+        for (size_t i = 0; i < n && item; ++i) item = item->prev;
         return item;
     }
 
@@ -25,13 +30,13 @@ class list {
         friend list;
 
        private:
-        list_item_t *p;
+        list_item_t* p;
 
        public:
-        iterator(list_item_t *x) : p(x) {}
-        iterator(const list_item_t &mit) : p(mit.p) {}
+        iterator(list_item_t* x) : p(x) {}
+        iterator(const list_item_t& mit) : p(mit.p) {}
 
-        iterator &operator++() {
+        iterator& operator++() {
             p = p->next;
             return *this;
         }
@@ -46,31 +51,41 @@ class list {
             return iterator{successor(p, n)};
         }
 
-        bool operator==(const T *&rhs) const { return p->elt == rhs; }
+        iterator operator--(int) {
+            iterator tmp(*this);
+            operator++();
+            return tmp;
+        }
 
-        bool operator==(const iterator &rhs) const { return p == rhs.p; }
-        bool operator!=(const iterator &rhs) const { return p != rhs.p; }
+        iterator operator-(int n) const {
+            return iterator{predecessor(p, n)};
+        }
 
-        T &operator*() { return p->elt; }
-        T *operator->() { return &(p->elt); }
+        bool operator==(const T*& rhs) const { return p->elt == rhs; }
 
-        const T &operator*() const { return p->elt; };
-        const T *operator->() const { return &(p->elt); };
+        bool operator==(const iterator& rhs) const { return p == rhs.p; }
+        bool operator!=(const iterator& rhs) const { return p != rhs.p; }
+
+        T& operator*() { return p->elt; }
+        T* operator->() { return &(p->elt); }
+
+        const T& operator*() const { return p->elt; };
+        const T* operator->() const { return &(p->elt); };
     };
 
    protected:
-    list_item_t *m_front = nullptr;
-    list_item_t *m_back = nullptr;
+    list_item_t* m_front = nullptr;
+    list_item_t* m_back = nullptr;
 
     size_t m_size = 0;
 
-    static constexpr bool match_function(const T &a, const T &b) {
+    static constexpr bool match_function(const T& a, const T& b) {
         return a == b;
     }
 
     template <typename Arg>
-    iterator find_helper(const Arg &elt, bool (*is_match)(const T &, const Arg &)) const {
-        list_item_t *item = m_front;
+    iterator find_helper(const Arg& elt, bool (*is_match)(const T&, const Arg&)) const {
+        list_item_t* item = m_front;
         while (item) {
             if (is_match(item->elt, elt))
                 return iterator(item);
@@ -79,8 +94,8 @@ class list {
         return end();
     }
 
-    iterator erase_helper(const iterator &it) {
-        list_item_t *item = it.p;
+    iterator erase_helper(const iterator& it) {
+        list_item_t* item = it.p;
         auto return_it = it + 1;
 
         if (item->prev)
@@ -99,15 +114,15 @@ class list {
         return return_it;
     }
 
-    void copy_from(const list<T> &other) {
+    void copy_from(const list<T>& other) {
         clear();
 
-        for (auto &item : other) {
+        for (auto& item : other) {
             push_back(item);
         }
     }
 
-    void move_from(list<T> &&other) {
+    void move_from(list<T>&& other) {
         swap(m_front, other.m_front);
         swap(m_back, other.m_back);
         swap(m_size, other.m_size);
@@ -120,20 +135,20 @@ class list {
 
     list() = default;
 
-    list(list<T> &other) {
+    list(list<T>& other) {
         copy_from(other);
     };
 
-    list(list<T> &&other) {
+    list(list<T>&& other) {
         move_from(other);
     };
 
-    list<T> &operator=(const list<T> &other) {
+    list<T>& operator=(const list<T>& other) {
         copy_from(other);
         return *this;
     }
 
-    list<T> &operator=(list<T> &&other) {
+    list<T>& operator=(list<T>&& other) {
         move_from(move(other));
         return *this;
     }
@@ -144,8 +159,8 @@ class list {
     iterator begin() const { return iterator(m_front); };
     iterator end() const { return iterator(nullptr); };
 
-    T &front() const { return m_front->elt; };
-    T &back() const { return m_back->elt; };
+    T& front() const { return m_front->elt; };
+    T& back() const { return m_back->elt; };
 
     void clear() {
         while (m_front) {
@@ -157,19 +172,19 @@ class list {
         m_size = 0;
     }
 
-    void push_back(const T &elt) {
+    void push_back(const T& elt) {
         insert(nullptr, elt);
     }
 
-    void push_front(const T &elt) {
+    void push_front(const T& elt) {
         if (m_size == 0)
             push_back(elt);
         else
             insert(m_front, elt);
     }
 
-    void insert(const iterator &it, const T &elt) {
-        list_item_t *new_item = new list_item_t();
+    iterator insert(const iterator& it, const T& elt) {
+        list_item_t* new_item = new list_item_t();
 
         new_item->elt = elt;
 
@@ -195,6 +210,8 @@ class list {
             m_front = new_item;
 
         m_size++;
+
+        return new_item;
     }
 
     void pop_back() {
@@ -223,9 +240,9 @@ class list {
         m_size--;
     }
 
-    iterator find(const T &elt) const { return find_helper(elt, match_function); }
+    iterator find(const T& elt) const { return find_helper(elt, match_function); }
 
-    iterator erase(const iterator &it) { return erase_helper(it); }
+    iterator erase(const iterator& it) { return erase_helper(it); }
 };
 
 }  // namespace lw_std
