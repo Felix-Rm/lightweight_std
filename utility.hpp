@@ -64,17 +64,28 @@ void swap(T& a, T& b) {
     b = move(temp);
 }
 
-#ifndef ARDUINO
 // lw_std implementation of std::max
 template <typename T>
-constexpr T max(const T& a, const T& b) {
+constexpr T max_of(const T& a, const T& b) {
     return a > b ? a : b;
 }
 
 // lw_std implementation of std::min
 template <typename T>
-constexpr T min(const T& a, const T& b) {
+constexpr T min_of(const T& a, const T& b) {
     return a < b ? a : b;
+}
+
+// FIXME: Wrappers may not be optimal, maybe this can be done with a using declaration
+#ifndef ARDUINO
+template <typename T>
+inline constexpr T max(const T& a, const T& b) {
+    return max_of(a, b);
+}
+
+template <typename T>
+inline constexpr T min(const T& a, const T& b) {
+    return min_of(a, b);
 }
 #endif
 }  // namespace lw_std
