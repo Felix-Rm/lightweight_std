@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef ARDUINO
-#    include "Arduino.hpp"
+#    include "Arduino.h"
 #else
 #    include <string>
 #endif
@@ -13,7 +13,9 @@ namespace lw_std {
 // lw_std string delegates to Arduino String
 using string = String;
 template <typename T>
-inline string to_string(T t) { return String(t); };
+inline string to_string(T t) {
+    return String(t);
+};
 
 #else
 
