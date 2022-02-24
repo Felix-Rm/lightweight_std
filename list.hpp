@@ -1,101 +1,185 @@
 #pragma once
 
+#include "common_container_impl.hpp"
+#include "unique_ptr.hpp"
 #include "utility.hpp"
 
 namespace lw_std {
 
-// lw_std implementation of std::vector
+// lw_std implementation of std::list
 template <typename T>
 class list {
    protected:
     struct list_item;
     typedef struct list_item {
-        T elt;
+        unique_ptr<T> elt;
         list_item* next;
         list_item* prev;
     } list_item_t;
 
-    static list_item_t* successor(list_item_t* item, size_t n) {
-        for (size_t i = 0; i < n && item; ++i) item = item->next;
-        return item;
-    }
-
-    static list_item_t* predecessor(list_item_t* item, size_t n) {
-        for (size_t i = 0; i < n && item; ++i) item = item->prev;
-        return item;
-    }
+    LWSTD_COMMON_ITERATOR_TYPES(list, T, list_item*);
+    LWSTD_COMMON_MEMBER_TYPES(T);
 
    public:
-    class iterator {
-        friend list;
+    ~list() {
+        clear();
+    }
 
-       private:
-        list_item_t* p;
+    list() = default;
 
-       public:
-        iterator(list_item_t* x) : p(x) {}
-        iterator(const list_item_t& mit) : p(mit.p) {}
-
-        iterator& operator++() {
-            p = p->next;
-            return *this;
-        }
-
-        iterator operator++(int) {
-            iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        iterator operator+(int n) const {
-            return iterator{successor(p, n)};
-        }
-
-        iterator operator--(int) {
-            iterator tmp(*this);
-            operator++();
-            return tmp;
-        }
-
-        iterator operator-(int n) const {
-            return iterator{predecessor(p, n)};
-        }
-
-        bool operator==(const T*& rhs) const { return p->elt == rhs; }
-
-        bool operator==(const iterator& rhs) const { return p == rhs.p; }
-        bool operator!=(const iterator& rhs) const { return p != rhs.p; }
-
-        T& operator*() { return p->elt; }
-        T* operator->() { return &(p->elt); }
-
-        const T& operator*() const { return p->elt; };
-        const T* operator->() const { return &(p->elt); };
+    list(list<T>& other) {
+        operator=(other);
     };
 
-   protected:
-    list_item_t* m_front = nullptr;
-    list_item_t* m_back = nullptr;
+    list(list<T>&& other) {
+        operator=(other);
+    };
 
-    size_t m_size = 0;
+    list<T>& operator=(const list<T>& other) {
+        clear();
 
-    static constexpr bool match_function(const T& a, const T& b) {
-        return a == b;
-    }
-
-    template <typename Arg>
-    iterator find_helper(const Arg& elt, bool (*is_match)(const T&, const Arg&)) const {
-        list_item_t* item = m_front;
-        while (item) {
-            if (is_match(item->elt, elt))
-                return iterator(item);
-            item = item->next;
+        for (auto& item : other) {
+            push_back(item);
         }
-        return end();
+
+        return *this;
     }
 
-    iterator erase_helper(const iterator& it) {
-        list_item_t* item = it.p;
+    list<T>& operator=(list<T>&& other) {
+        if (&other != this) {
+            swap(m_front, other.m_front);
+            swap(m_back, other.m_back);
+            swap(m_size, other.m_size);
+        }
+        return *this;
+    }
+
+    size_type size() const {
+        return m_size;
+    };
+
+    bool empty() const {
+        return m_size == 0;
+    };
+
+    iterator begin() {
+        return iterator(m_front);
+    };
+
+    iterator end() {
+        return iterator(nullptr);
+    };
+
+    const_iterator begin() const {
+        return const_iterator(m_front);
+    };
+
+    const_iterator end() const {
+        return const_iterator(nullptr);
+    };
+
+    const_iterator cbegin() const {
+        return const_iterator(m_front);
+    };
+
+    const_iterator cend() const {
+        return const_iterator(nullptr);
+    };
+
+    reference front() {
+        return *(m_front->elt);
+    };
+
+    reference back() {
+        return *(m_back->elt);
+    };
+
+    const_reference front() const {
+        return *(m_front->elt);
+    };
+
+    const_reference back() const {
+        return *(m_back->elt);
+    };
+
+    void clear() {
+        while (m_front) {
+            auto next = m_front->next;
+            delete m_front;
+            m_front = next;
+        }
+        m_back = nullptr;
+        m_size = 0;
+    }
+
+    template <typename... Args>
+    reference emplace_back(Args... arguments) {
+        return emplace(nullptr, arguments...);
+    }
+
+    void push_back(const_reference elt) {
+        insert(nullptr, elt);
+    }
+
+    template <typename... Args>
+    reference emplace_front(Args... arguments) {
+        return emplace(m_front, arguments...);
+    }
+
+    void push_front(const_reference elt) {
+        insert(m_front, elt);
+    }
+
+    iterator insert(const_iterator& it, const_reference elt) {
+        list_item_t* new_item = new list_item_t();
+        new_item->elt = new T(elt);
+
+        return insert_list_item(it, new_item);
+    }
+
+    template <typename... Args>
+    reference emplace(const iterator& it, Args... arguments) {
+        list_item_t* new_item = new list_item_t();
+        new_item->elt = new T{arguments...};
+
+        return *insert_list_item(it, new_item);
+    }
+
+    void pop_back() {
+        if (m_back == nullptr)
+            return;
+
+        auto to_delete = m_back;
+        m_back = m_back->prev;
+        m_back->next = nullptr;
+
+        delete to_delete;
+        m_size--;
+    }
+
+    void pop_front() {
+        if (m_front == nullptr)
+            return;
+
+        if (m_back == m_front)
+            m_back = nullptr;
+
+        auto to_delete = m_front;
+        m_front = m_front->next;
+
+        if (m_front != nullptr)
+            m_front->prev = nullptr;
+
+        delete to_delete;
+        m_size--;
+    }
+
+    const_iterator find(const_reference elt) const {
+        return find_helper(elt, match_function);
+    }
+
+    iterator erase(const_iterator& it) {
+        list_item_t* item = it.m_data;
         auto return_it = it + 1;
 
         if (item->prev)
@@ -114,82 +198,64 @@ class list {
         return return_it;
     }
 
-    void copy_from(const list<T>& other) {
-        clear();
+   protected:
+    class iterator_ {
+       public:
+        list_item_t* m_data;
 
-        for (auto& item : other) {
-            push_back(item);
+        iterator_() = default;
+
+        iterator_(list_item_t* it)
+            : m_data(it) {}
+
+        T& get() {
+            return *(m_data->elt);
         }
-    }
 
-    void move_from(list<T>&& other) {
-        swap(m_front, other.m_front);
-        swap(m_back, other.m_back);
-        swap(m_size, other.m_size);
-    }
+        bool equals(const iterator_& rhs) const {
+            return m_data == rhs.m_data;
+        }
 
-   public:
-    ~list() {
-        clear();
-    }
+        void advance(int n) {
+            for (int i = 0; i < n && m_data; ++i)
+                m_data = m_data->next;
 
-    list() = default;
+            for (int i = 0; i > n && m_data; --i)
+                m_data = m_data->prev;
+        }
 
-    list(list<T>& other) {
-        copy_from(other);
+        void copy_impl(const iterator_& other) {
+            m_data = other.m_data;
+        }
+
+        void move_impl(iterator_& other) {
+            m_data = move(other.m_data);
+        }
     };
 
-    list(list<T>&& other) {
-        move_from(other);
-    };
+    list_item_t* m_front = nullptr;
+    list_item_t* m_back = nullptr;
 
-    list<T>& operator=(const list<T>& other) {
-        copy_from(other);
-        return *this;
+    size_type m_size = 0;
+
+    static constexpr bool match_function(const_reference a, const_reference b) {
+        return a == b;
     }
 
-    list<T>& operator=(list<T>&& other) {
-        move_from(move(other));
-        return *this;
-    }
-
-    size_t size() const { return m_size; };
-    bool empty() const { return m_size == 0; };
-
-    iterator begin() const { return iterator(m_front); };
-    iterator end() const { return iterator(nullptr); };
-
-    T& front() const { return m_front->elt; };
-    T& back() const { return m_back->elt; };
-
-    void clear() {
-        while (m_front) {
-            auto next = m_front->next;
-            delete m_front;
-            m_front = next;
+    template <typename Type, typename Predicate>
+    const_iterator find_helper(const Type& elt, Predicate is_match) const {
+        list_item_t* item = m_front;
+        while (item) {
+            if (is_match(*(item->elt), elt))
+                return const_iterator(item);
+            item = item->next;
         }
-        m_back = nullptr;
-        m_size = 0;
+        return end();
     }
 
-    void push_back(const T& elt) {
-        insert(nullptr, elt);
-    }
-
-    void push_front(const T& elt) {
-        if (m_size == 0)
-            push_back(elt);
-        else
-            insert(m_front, elt);
-    }
-
-    iterator insert(const iterator& it, const T& elt) {
-        list_item_t* new_item = new list_item_t();
-
-        new_item->elt = elt;
-
+    iterator insert_list_item(const_iterator& it, list_item* new_item) {
         // if we are inserting before end, we are the new back and have no next elt
-        if (it.p == nullptr) {
+        if (it.m_data == nullptr) {
             if (m_back) {
                 new_item->prev = m_back;
                 m_back->next = new_item;
@@ -197,52 +263,22 @@ class list {
 
             m_back = new_item;
         } else {
-            if (it.p->prev) {
-                new_item->prev = it.p->prev;
-                it.p->prev->next = new_item;
+            if (it.m_data->prev) {
+                new_item->prev = it.m_data->prev;
+                it.m_data->prev->next = new_item;
             }
 
-            new_item->next = it.p;
-            it.p->prev = new_item;
+            new_item->next = it.m_data;
+            it.m_data->prev = new_item;
         }
 
-        if (it.p == m_front || m_front == nullptr)
+        if (it.m_data == m_front || m_front == nullptr)
             m_front = new_item;
 
         m_size++;
 
         return new_item;
     }
-
-    void pop_back() {
-        if (m_back == nullptr) return;
-
-        auto to_delete = m_back;
-        m_back = m_back->prev;
-        m_back->next = nullptr;
-
-        delete to_delete;
-        m_size--;
-    }
-
-    void pop_front() {
-        if (m_front == nullptr) return;
-
-        if (m_back == m_front) m_back = nullptr;
-
-        auto to_delete = m_front;
-        m_front = m_front->next;
-
-        if (m_front != nullptr)
-            m_front->prev = nullptr;
-
-        delete to_delete;
-        m_size--;
-    }
-
-    iterator find(const T& elt) const { return find_helper(elt, match_function); }
-
-    iterator erase(const iterator& it) { return erase_helper(it); }
 };
 
 }  // namespace lw_std
