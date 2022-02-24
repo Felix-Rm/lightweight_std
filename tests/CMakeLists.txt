@@ -4,6 +4,8 @@ enable_testing()
 
 if(NOT TARGET lw_std_test_suite)
 
+SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++17 -Wall -fsanitize=address")
+
 add_subdirectory(ftest)
 
 project(lw_std_test_suite)
