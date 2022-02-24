@@ -5,23 +5,52 @@
 namespace lw_std {
 
 // lw_std implementation of std::queue
-template <typename T>
-class queue : private list<T> {
-   private:
-    using list<T>::push_back;
-    using list<T>::pop_back;
+template <typename T, typename ContainerType = list<T>>
+class queue {
+    LWSTD_COMMON_MEMBER_TYPES(T);
 
    public:
-    // push item to queue
-    void push(const T& elt) { this->push_back(elt); };
+    typedef ContainerType container_type;
 
-    // pop item from queue
-    void pop() { this->pop_front(); };
+    constexpr size_type size() const {
+        return m_container.size();
+    }
 
-    using list<T>::size;
-    using list<T>::empty;
-    using list<T>::front;
-    using list<T>::back;
+    constexpr bool empty() const {
+        return m_container.empty();
+    }
+
+    constexpr reference front() {
+        return m_container.front();
+    }
+
+    constexpr const_reference front() const {
+        return m_container.front();
+    }
+
+    constexpr reference back() {
+        return m_container.back();
+    }
+
+    constexpr const_reference back() const {
+        return m_container.back();
+    }
+
+    constexpr void push(const T& elt) {
+        m_container.push_back(elt);
+    };
+
+    constexpr void pop() {
+        m_container.pop_front();
+    };
+
+    template <typename... Args>
+    constexpr reference emplace(Args... args) {
+        return m_container.emplace_back(args...);
+    }
+
+   private:
+    ContainerType m_container{};
 };
 
 }  // namespace lw_std
