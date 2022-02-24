@@ -3,6 +3,8 @@
 #ifdef ARDUINO
 #    include "Arduino.h"
 #else
+#    include <sys/types.h>
+
 #    include <cstddef>
 #    include <cstdint>
 #endif
@@ -27,9 +29,32 @@ constexpr typename remove_reference<T>::type&& move(T&& arg) noexcept {
 template <typename T, typename U>
 class pair {
    public:
-    T first{};
-    U second{};
+    T first;
+    U second;
+
+    pair() = default;
+
+    pair(const T& t, const U& u)
+        : first(t), second(u){};
+
+    // FIXME: Meant for compatibility with std::pair, but may match any type with "pair" syntax (which may not be a bad thing?)
+    template <template <typename, typename> class S, typename A, typename B>
+    pair(const S<A, B>& other) {
+        first = other.first;
+        second = other.second;
+    }
 };
+
+// FIXME: These operators are meant for compatibility with std::pair, but they may catch more types because of the generic template
+template <template <typename, typename> class T, template <typename, typename> class U, typename A, typename B, typename C, typename D>
+constexpr bool operator==(const T<A, B>& lhs, const U<C, D>& rhs) {
+    return lhs.first == rhs.first && lhs.second == rhs.second;
+}
+
+template <template <typename, typename> class T, template <typename, typename> class U, typename A, typename B, typename C, typename D>
+constexpr bool operator!=(const T<A, B>& lhs, const U<C, D>& rhs) {
+    return !operator==(lhs, rhs);
+}
 
 // lw_std implementation of std::swap
 template <typename T>
