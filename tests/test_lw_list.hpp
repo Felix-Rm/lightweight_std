@@ -1,57 +1,37 @@
 #pragma once
 
+#include <list>
+
 #include "ftest/test_logging.hpp"
 #include "list.hpp"
+#include "test_utilities.hpp"
 
-class TestLwList {
-   public:
-    const std::string test_name = "list";
+class TestLwList : public ContainerTestDefaultMixin<TestLwList, lw_std::list, std::list> {
+    friend ContainerTestDefaultMixin;
 
-    TestLogging::test_result_t run() {
-        lw_std::list<int> lst;
+   private:
+    template <typename ContainerTestType>
+    static TestLogging::test_result_t run_templated(ContainerTestType& tester, size_t operation_count) {
+        tester.set_size_getter(ContainerTestType::default_size_getter);
 
-        if (lst.size() != 0) return {"initial size not 0"};
+        tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
+        tester.set_verify_container_printer(ContainerTestType::default_verify_container_printer);
 
-        lst.push_back(1);
+        tester.add_grow_modifier("push_back", ContainerTestType::default_grow_by_push_back);
+        tester.add_grow_modifier("push_front", ContainerTestType::default_grow_by_push_front);
+        tester.add_grow_modifier("emplace", ContainerTestType::default_grow_by_emplace);
+        tester.add_grow_modifier("emplace_back", ContainerTestType::default_grow_by_emplace_back);
+        tester.add_grow_modifier("emplace_front", ContainerTestType::default_grow_by_emplace_front);
+        tester.add_grow_modifier("insert", ContainerTestType::default_grow_by_insert);
 
-        if (lst.size() != 1) return {"size wrong on first insert"};
+        tester.add_shrink_modifier("pop_back", ContainerTestType::default_shrink_by_pop_back);
+        tester.add_shrink_modifier("pop_front", ContainerTestType::default_shrink_by_pop_front);
+        tester.add_shrink_modifier("erase", ContainerTestType::default_shrink_by_erase_by_iterator);
 
-        lst.push_back(2);
-        lst.push_back(1);
+        tester.add_verifier("size", ContainerTestType::default_verify_size);
+        tester.add_verifier("element position", ContainerTestType::default_verify_element_position);
+        tester.add_verifier("find existing element", ContainerTestType::default_verify_find_existing_element);
 
-        if (lst.size() != 3) return {"size wrong on successive inserts"};
-
-        if (lst.find(1) != lst.begin()) return {"find duplicate element"};
-        if (lst.find(2) != lst.begin() + 1) return {"find existing element"};
-        if (lst.find(5) != lst.end()) return {"find non existing element"};
-
-        lst.pop_front();
-        if (lst.size() != 2) return {"size after pop_front"};
-
-        lst.pop_back();
-        if (lst.size() != 1) return {"size after pop_back"};
-
-        lst.erase(lst.begin());
-        if (lst.size() != 0) return {"erasing last element"};
-
-        lst.push_back(1);
-        lst.push_front(2);
-
-        lst.push_back(3);
-        lst.push_front(4);
-
-        size_t sum = 0;
-        for (auto elt : lst) sum += elt;
-
-        if (sum != 10) return {"sum of elements wrong"};
-
-        if (lst.front() != 4) return {"wrong element position after insert before front"};
-        if (lst.size() != 4) return {"size wrong after (second) successive insert"};
-
-        lst.erase(lst.find(1));
-
-        if (lst.size() != 3) return {"size wrong after erase by find"};
-
-        return {};
+        return tester.run_operations(operation_count);
     };
 };

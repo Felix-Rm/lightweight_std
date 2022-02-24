@@ -1,31 +1,30 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "ftest/test_logging.hpp"
+#include "test_utilities.hpp"
 #include "unordered_map.hpp"
 
-class TestLwUnorderedMap {
-   public:
-    const std::string test_name = "unordered_map";
+class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, lw_std::unordered_map, std::unordered_map> {
+    friend ContainerTestDefaultMixin;
 
-    TestLogging::test_result_t run() {
-        lw_std::unordered_map<double, int> m;
+   private:
+    template <typename ContainerTestType>
+    static TestLogging::test_result_t run_templated(ContainerTestType& tester, size_t operation_count) {
+        tester.set_size_getter(ContainerTestType::default_size_getter);
 
-        m[0.5] = 1;
-        m[1] = 8;
+        tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
+        tester.set_verify_container_printer(ContainerTestType::default_verify_container_printer);
 
-        if (m.size() != 2) return {"incorrect size of map"};
+        tester.add_grow_modifier("insert", ContainerTestType::default_grow_by_insert_no_iterator);
+        tester.add_grow_modifier("emplace", ContainerTestType::default_grow_by_emplace_no_iterator);
 
-        if (m[0.5] != 1) return {"error reading value from map"};
+        tester.add_shrink_modifier("erase", ContainerTestType::default_shrink_by_map_erase_by_value);
 
-        m[0.5] = 8;
+        tester.add_verifier("size", ContainerTestType::default_verify_size);
+        tester.add_verifier("element inclusion", ContainerTestType::default_verify_map_element_inclusion);
 
-        if (m[0.5] != 8) return {"error reading value from map"};
-        if (m.size() != 2) return {"incorrect size of map"};
-
-        m.erase(1);
-
-        if (m.size() != 1) return {"incorrect size of map"};
-
-        return {};
+        return tester.run_operations(operation_count);
     };
 };

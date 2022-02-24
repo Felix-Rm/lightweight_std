@@ -1,30 +1,30 @@
 #pragma once
 
+#include <unordered_set>
+
 #include "ftest/test_logging.hpp"
+#include "test_utilities.hpp"
 #include "unordered_set.hpp"
 
-class TestLwUnorderedSet {
-   public:
-    const std::string test_name = "unordered_set";
+class TestLwUnorderedSet : public ContainerTestDefaultMixin<TestLwUnorderedSet, lw_std::unordered_set, std::unordered_set> {
+    friend ContainerTestDefaultMixin;
 
-    TestLogging::test_result_t run() {
-        lw_std::unordered_set<int> s;
+   private:
+    template <typename ContainerTestType>
+    static TestLogging::test_result_t run_templated(ContainerTestType& tester, size_t operation_count) {
+        tester.set_size_getter(ContainerTestType::default_size_getter);
 
-        s.insert(0);
-        s.insert(1);
+        tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
+        tester.set_verify_container_printer(ContainerTestType::default_verify_container_printer);
 
-        if (s.size() != 2) return {"incorrect size of set"};
+        tester.add_grow_modifier("insert", ContainerTestType::default_grow_by_insert_no_iterator);
+        tester.add_grow_modifier("emplace", ContainerTestType::default_grow_by_emplace_no_iterator);
 
-        s.insert(0);
+        tester.add_shrink_modifier("erase", ContainerTestType::default_shrink_by_erase_by_value);
 
-        if (s.size() != 2) return {"incorrect size of set after inserting same element twice"};
+        tester.add_verifier("size", ContainerTestType::default_verify_size);
+        tester.add_verifier("element inclusion", ContainerTestType::default_verify_element_inclusion);
 
-        s.erase(0);
-
-        if (s.size() != 1) return {"incorrect size of set after erasing"};
-
-        if (s.find(1) == s.end()) return {"error finding elt in set"};
-
-        return {};
+        return tester.run_operations(operation_count);
     };
 };

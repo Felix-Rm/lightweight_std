@@ -1,29 +1,35 @@
 #pragma once
 
+#include <queue>
+
 #include "ftest/test_logging.hpp"
 #include "queue.hpp"
+#include "test_utilities.hpp"
 
-class TestLwQueue {
-   public:
-    const std::string test_name = "queue";
+class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue, std::queue> {
+    friend ContainerTestDefaultMixin;
 
-    TestLogging::test_result_t run() {
-        lw_std::queue<double> q;
+   private:
+    template <typename Container>
+    static void printer(const Container& c) {
+    }
 
-        q.push(1);
-        q.push(1.5);
+    template <typename ContainerTestType>
+    static TestLogging::test_result_t run_templated(ContainerTestType& tester, size_t operation_count) {
+        tester.set_size_getter(ContainerTestType::default_size_getter);
 
-        if (q.size() != 2) return {"incorrect size of queue"};
+        tester.set_test_container_printer(printer<typename ContainerTestType::test_container_t>);
+        tester.set_verify_container_printer(printer<typename ContainerTestType::verify_container_t>);
 
-        q.pop();
-        q.pop();
+        tester.add_grow_modifier("push", ContainerTestType::default_grow_by_push);
+        tester.add_grow_modifier("emplace", ContainerTestType::default_grow_by_emplace_no_iterator);
 
-        if (q.size() != 0) return {"incorrect size of queue"};
+        tester.add_shrink_modifier("pop_back", ContainerTestType::default_shrink_by_pop);
 
-        q.pop();
+        tester.add_verifier("size", ContainerTestType::default_verify_size);
+        tester.add_verifier("front element position", ContainerTestType::default_verify_front_element_position);
+        tester.add_verifier("back element position", ContainerTestType::default_verify_back_element_position);
 
-        if (q.size() != 0) return {"incorrect size of queue after poping empty"};
-
-        return {};
+        return tester.run_operations(operation_count);
     };
 };
