@@ -9,14 +9,21 @@
 int main() {
     TestLogging::start_suite("lw_std");
 
-    TestLogging::run<TestLwVector>();
-    TestLogging::run<TestLwList>();
-    TestLogging::run<TestLwPair>();
-    TestLogging::run<TestLwQueue>();
-    TestLogging::run<TestLwUnorderedSet>();
-    TestLogging::run<TestLwUnorderedMap>();
+    TestLogging::run("vector<int>", TestLwVector::run_with_int, 1000);
+    TestLogging::run("vector<NonTrivial>", TestLwVector::run_with_non_trivial, 1000);
 
-    TestLogging::results();
+    TestLogging::run("list<int>", TestLwList::run_with_int, 1000);
+    TestLogging::run("list<NonTrivial", TestLwList::run_with_non_trivial, 1000);
 
-    return 0;
+    TestLogging::run("pair", TestLwPair::run);
+
+    TestLogging::run("queue<int>", TestLwQueue::run_with_int, 1000);
+    TestLogging::run("queue<NonTrivial>", TestLwQueue::run_with_non_trivial, 1000);
+
+    TestLogging::run("unordered_set<int>", TestLwUnorderedSet::run_with_int, 1000);
+
+    TestLogging::run("unordered_map<int, int>", TestLwUnorderedMap::run_with_int_int, 1000);
+    TestLogging::run("unordered_map<int, NonTrivial>", TestLwUnorderedMap::run_with_int_non_trivial, 1000);
+
+    return TestLogging::results();
 }
