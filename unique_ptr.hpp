@@ -16,7 +16,10 @@ class unique_ptr {
     unique_ptr(const unique_ptr&&) = delete;
 
     ~unique_ptr() {
-        if (m_ptr) delete m_ptr;
+        if (m_ptr) {
+            delete m_ptr;
+            m_ptr = nullptr;
+        };
     }
 
     unique_ptr(unique_ptr&& other) {
