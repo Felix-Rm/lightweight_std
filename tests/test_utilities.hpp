@@ -469,7 +469,7 @@ class ContainerTester {
         int idx = rand() % tc_size_getter(tc);
 
         auto find_value = *(tc.begin() + idx);
-        auto res = tc.find(find_value);
+        auto res = find(tc.begin(), tc.end(), find_value);
 
         if (res == tc.end())
             return {"find failed on existing value " + to_string(find_value)};
