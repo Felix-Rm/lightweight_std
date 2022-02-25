@@ -1,5 +1,6 @@
 #pragma once
 
+#include "algorithm.hpp"
 #include "common_container_impl.hpp"
 #include "limits.hpp"
 #include "unique_ptr.hpp"
@@ -7,14 +8,22 @@
 
 namespace lw_std {
 
-// vector https://en.cppreference.com/w/cpp/container/vector
+// FIXME: add allocator support: vector (1) https://en.cppreference.com/w/cpp/container/vector
 template <typename T>
 class vector {
    protected:
+    /*
+        Member types
+    */
+
     LWSTD_COMMON_ITERATOR_TYPES(vector, T, unique_ptr<T>&);
     LWSTD_COMMON_MEMBER_TYPES(T);
 
    public:
+    /*
+        Member functions
+    */
+
     // (constructor) (1) https://en.cppreference.com/w/cpp/container/vector/vector
     vector() noexcept = default;
 
@@ -357,20 +366,6 @@ class vector {
         swap(*this, other);
     }
 
-    /*
-        Non-standard
-    */
-
-    iterator find(const_reference elt) {
-        // FIXME: As soon as unordered map and set don't rely on vector anymore, remove the find helper stuff
-        return find_helper(elt, match_function);
-    }
-
-    const_iterator find(const_reference elt) const {
-        // FIXME: As soon as unordered map and set don't rely on vector anymore, remove the find helper stuff
-        return find_helper(elt, match_function);
-    }
-
    protected:
     class iterator_ {
        public:
@@ -407,21 +402,17 @@ class vector {
     size_type m_size{0};
     size_type m_allocated_size{0};
 
-    static constexpr bool match_function(const_reference a, const_reference b) {
-        return a == b;
-    }
-
-    void shift_left(size_type from, size_type by) {
+    void shift_left(size_type from, size_type by) noexcept {
         for (size_type j = from + by; j < m_size; ++j)
             m_data[j - by] = move(m_data[j]);
     }
 
-    void shift_right(ssize_t from, size_type by) {
+    void shift_right(ssize_t from, size_type by) noexcept {
         for (ssize_t j = m_size - 1 - by; j >= from; --j)
             m_data[j + by] = move(m_data[j]);
     }
 
-    void grow(size_type by = 8) {
+    void grow(size_type by = 8) noexcept {
         size_type new_size = m_allocated_size + by;
         auto new_data = new unique_ptr<T>[new_size];
 
@@ -435,7 +426,7 @@ class vector {
         m_data = new_data;
     }
 
-    void shrink(size_type to_size) {
+    void shrink(size_type to_size) noexcept {
         auto new_data = new unique_ptr<T>[to_size];
 
         for (size_type i = 0; i < to_size; i++)
@@ -448,17 +439,55 @@ class vector {
         m_data = new_data;
     }
 
-    template <typename Type, typename Predicate>
-    const_iterator find_helper(const Type& elt, Predicate is_match) const {
-        for (size_type i = 0; i < m_size; i++)
-            if (is_match(*(m_data[i]), elt))
-                return m_data[i];
-        return end();
-    }
-
-    size_type index_from_iterator(const_iterator& it) const {
+    size_type index_from_iterator(const_iterator& it) const noexcept {
         return it.m_data - m_data;
     }
 };
+
+/*
+    Non-member functions
+*/
+
+// operator== (1) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator==(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return lhs.size() == rhs.size() && equal(lhs.begin(), lhs.end(), rhs.begin());
+}
+
+// operator== (2) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator!=(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return !operator==(lhs, rhs);
+}
+
+// operator< (3) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator<(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), synthesized_cmp_less<T, T>);
+}
+
+// operator<= (4) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator<=(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), synthesized_cmp_less_equal<T, T>);
+}
+
+// operator> (5) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator>(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), synthesized_cmp_greater<T, T>);
+}
+
+// operator>= (6) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+template <typename T>
+constexpr bool operator>=(const vector<T>& lhs, const vector<T>& rhs) noexcept {
+    return lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end(), synthesized_cmp_greater_equal<T, T>);
+}
+
+// FIXME: operator<=> (7) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
+
+// NOTE: no extra specialization: swap https://en.cppreference.com/w/cpp/container/vector/swap2
+// NOTE: no extra specialization: erase (1) https://en.cppreference.com/w/cpp/container/vector/erase2
+// NOTE: no extra specialization: erase (2) https://en.cppreference.com/w/cpp/container/vector/erase2
 
 }  // namespace lw_std
