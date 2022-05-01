@@ -1,92 +1,57 @@
 #pragma once
 
-#include "unordered_set.hpp"
-#include "utility.hpp"
+#include "impl/hash_container.hpp"
 
 namespace lw_std {
+// unordered_map header https://en.cppreference.com/w/cpp/container/unordered_map
 
-// lw_std implementation of std::unordered_map
-template <typename T, typename U>
-class unordered_map : private unordered_set<pair<T, U>> {
+template <typename T, typename U, typename Hash = hash<T>, typename Equal = equal_to<T>, typename Allocator = allocator<pair<T, U>>>
+class unordered_map : public hash_container_impl<pair<T, U>, T, Hash, Equal, Allocator> {
    private:
-    static constexpr bool match_function(const pair<T, U>& a, const T& b) {
-        return a.first == b;
-    }
-
-    U& at_helper(const T& key) const {
-        iterator res = this->find(key);
-        if (res != this->end()) {
-            return res->second;
-        }
-
-        // NOTE: lw_std doesn't throw on lookup failure
-        return this->back().second;
-    }
+    using underlying_type = hash_container_impl<pair<T, U>, T, Hash, Equal>;
 
    public:
-    typedef typename unordered_set<pair<T, U>>::iterator iterator;
-    typedef typename unordered_set<pair<const T, U>>::const_iterator const_iterator;
+    /*
+        MEMBER TYPES
+    */
 
-    using typename unordered_set<pair<T, U>>::value_type;
+    using mapped_type = U;
 
-    using unordered_set<pair<T, U>>::erase;
-    using unordered_set<pair<T, U>>::begin;
-    using unordered_set<pair<T, U>>::end;
-    using unordered_set<pair<T, U>>::size;
-    using unordered_set<pair<T, U>>::empty;
+    /*
+        MEMBER FUNCTIONS
+    */
 
-    // find element in map by key
-    iterator find(const T& key) {
-        return this->find_helper(key, match_function);
+    /*
+        Lookup
+    */
+
+    // at (1) https://en.cppreference.com/w/cpp/container/unordered_map/at
+    mapped_type& at(const typename underlying_type::key_type& key) {
+        return (mapped_type&)this->find_hash(key, this->hash_element(key))->second;
     }
 
-    const_iterator find(const T& key) const {
-        return this->find_helper(key, match_function);
+    // at (2) https://en.cppreference.com/w/cpp/container/unordered_map/at
+    const mapped_type& at(const typename underlying_type::key_type& key) const {
+        return this->find_hash(key, this->hash_element(key))->second;
     }
 
-    size_t erase(const T& key) {
-        auto res = find(key);
-        if (res != this->end()) {
-            erase(res);
-            return 1;
-        }
-
-        return 0;
+    // operator[] (1) https://en.cppreference.com/w/cpp/container/unordered_map/at
+    mapped_type& operator[](const typename underlying_type::key_type& key) {
+        auto& res = this->find_hash(key, this->hash_element(key));
+        if (res == this->end()) return this->emplace(lw_std::move(typename underlying_type::value_type{key, {}})).first->second;
+        else return (mapped_type&)res->second;
     }
 
-    U& at(const T& key) {
-        return at_helper(key);
-    };
-
-    U& at(const T& key) const {
-        return at_helper(key);
-    };
-
-    //  element acces with operator[]
-    U& operator[](const T& key) {
-        auto res = find(key);
-        if (res != this->end())
-            return res->second;
-
-        this->push_back({key, {}});
-        return this->back().second;
+    // operator[] (2) https://en.cppreference.com/w/cpp/container/unordered_map/at
+    mapped_type& operator[](typename underlying_type::key_type&& key) {
+        auto& res = this->find_hash(key, this->hash_element(key));
+        if (res == this->end()) return this->emplace(lw_std::move(typename underlying_type::value_type{lw_std::move(key), {}})).first->second;
+        else return (mapped_type&)res->second;
     }
 
-    template <typename... Args>
-    void emplace(const T& key, Args... arguments) {
-        auto res = find(key);
-        if (res == this->end())
-            unordered_set<pair<T, U>>::emplace(key, arguments...);
-    }
-
-    template <template <typename, typename> class S, typename A, typename B>
-    void emplace(const S<A, B>& arg) {
-        emplace(arg.first, arg.second);
-    }
-
-    template <template <typename, typename> class S, typename A, typename B>
-    void insert(const S<A, B>& arg) {
-        emplace(arg.first, arg.second);
+   private:
+    const typename underlying_type::key_type& key_access_proxy(typename underlying_type::const_reference elt) const override {
+        return elt.first;
     }
 };
 

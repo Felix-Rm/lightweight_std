@@ -1,56 +1,17 @@
 #pragma once
 
-#include "list.hpp"
+#include "impl/hash_container.hpp"
 
 namespace lw_std {
+// unordered_set header https://en.cppreference.com/w/cpp/container/unordered_set
 
-// lw_std implementation of std::unordered_set
-template <typename T>
-class unordered_set : private list<T> {
-   protected:
-    using list<T>::push_back;
+template <typename T, typename Hash = hash<T>, typename Equal = equal_to<T>, typename Allocator = allocator<T>>
+class unordered_set : public hash_container_impl<T, T, Hash, Equal, Allocator> {
+   private:
+    using underlying_type = hash_container_impl<T, T, Hash, Equal>;
 
-    // for inheritance of unordered_map:
-    using list<T>::find_helper;
-    using list<T>::emplace_back;
-    using list<T>::back;
-
-   public:
-    typedef typename list<T>::iterator iterator;
-    typedef typename list<T>::const_iterator const_iterator;
-
-    using list<T>::value_type;
-
-    using list<T>::find;
-    using list<T>::end;
-    using list<T>::begin;
-    using list<T>::empty;
-    using list<T>::size;
-    using list<T>::erase;
-
-    template <typename... Args>
-    void emplace(Args... args) {
-        T elt{args...};
-        auto res = find(elt);
-        if (res == end())
-            this->emplace_back(move(elt));
-    }
-
-    void insert(const T& elt) {
-        auto res = find(elt);
-        if (res == end())
-            push_back(elt);
-    }
-
-    size_t erase(const T& key) {
-        auto res = find(key);
-
-        if (res == end()) {
-            return 0;
-        } else {
-            erase(res);
-            return 1;
-        }
+    const typename underlying_type::key_type& key_access_proxy(typename underlying_type::const_reference elt) const override {
+        return elt;
     }
 };
 
