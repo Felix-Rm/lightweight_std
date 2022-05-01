@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 enable_testing()
+project(lw_std_build)
+
+set_property(GLOBAL PROPERTY CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(tests)
 
