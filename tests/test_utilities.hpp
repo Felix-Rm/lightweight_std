@@ -86,18 +86,23 @@ class ContainerTester {
     typedef TestContainer test_container_t;
     typedef VerifyContainer verify_container_t;
 
-    typedef std::function<size_t(const TestContainer&)> size_getter_t;
+    typedef std::function<size_t(const test_container_t&)> size_getter_t;
     typedef std::function<ContainerValueType()> value_generator_t;
 
-    typedef std::function<std::string(TestContainer&, VerifyContainer&, const value_generator_t&)> grow_modifier_t;
-    typedef std::function<std::string(TestContainer&, VerifyContainer&)> shrink_modifier_t;
-    typedef std::function<TestLogging::test_result_t(const TestContainer&, const VerifyContainer&)> verifier_t;
+    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&, const value_generator_t&)> neutral_modifier_t;
+    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&, const value_generator_t&)> grow_modifier_t;
+    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&)> shrink_modifier_t;
+    typedef std::function<TestLogging::test_result_t(const test_container_t&, const verify_container_t&)> verifier_t;
 
-    typedef std::function<void(const TestContainer&)> tc_printer_t;
-    typedef std::function<void(const VerifyContainer&)> tv_printer_t;
+    typedef std::function<void(const test_container_t&)> tc_printer_t;
+    typedef std::function<void(const verify_container_t&)> tv_printer_t;
 
     void set_median_size(size_t size) {
         m_median_size = size;
+    };
+
+    void add_neutral_modifier(std::string name, const neutral_modifier_t& mod) {
+        m_neutral_modifiers.emplace(move(name), mod);
     };
 
     void add_grow_modifier(std::string name, const grow_modifier_t& mod) {
@@ -134,11 +139,12 @@ class ContainerTester {
         }
 
         auto seed = time(NULL);
-        std::srand(0);
+        std::srand(0);  // NOTE: if there is an error it is repeatable with constant seed
 
         TestLogging::test_printf("Random seed for container test is %ld", seed);
 
         for (size_t i = 0; i < num; ++i) {
+            TestLogging::test_result_t step_result;
             operation_t op = operations::GROW;
 
             auto curent_size = m_size_getter(m_test_container);
@@ -148,36 +154,50 @@ class ContainerTester {
                 ssize_t current_size_with_tolerance = (ssize_t) curent_size + tolerance;
 
                 op = current_size_with_tolerance > m_median_size ? operations::SHRINK : operations::GROW;
+
+                if (rand() % 100 < 5)
+                    op = operations::NEUTRAL;
             }
 
             // TestLogging::test_printf("running %s operation, size = %ld", op == operations::GROW ? "grow" : "shrink", curent_size);
 
             std::string last_mod_name = "";
-            std::string last_mod_operation = "";
 
-            if (op == operations::GROW) {
-                size_t idx = rand() % m_grow_modifiers.size();
-                auto it = m_grow_modifiers.begin();
-                std::advance(it, idx);
+            if (op == operations::GROW && m_grow_modifiers.size()) {
+                auto it = random_choice(m_grow_modifiers);
                 last_mod_name = it->first;
-                last_mod_operation = it->second(m_test_container, m_verify_container, m_generator);
-            } else {
-                size_t idx = rand() % m_shrink_modifiers.size();
-                auto it = m_shrink_modifiers.begin();
-                std::advance(it, idx);
+                step_result = it->second(m_test_container, m_verify_container, m_generator);
+            } else if (op == operations::NEUTRAL && m_neutral_modifiers.size()) {
+                auto it = random_choice(m_neutral_modifiers);
                 last_mod_name = it->first;
-                last_mod_operation = it->second(m_test_container, m_verify_container);
+                step_result = it->second(m_test_container, m_verify_container, m_generator);
+            } else if (m_shrink_modifiers.size()) {
+                auto it = random_choice(m_shrink_modifiers);
+                last_mod_name = it->first;
+                step_result = it->second(m_test_container, m_verify_container);
             }
 
-            for (auto& verifier : m_verifiers) {
-                TestLogging::test_result_t s = verifier.second(m_test_container, m_verify_container);
-                if (!s.passed) {
-                    TestLogging::test_printf("Test Container:");
-                    m_tc_printer(m_test_container);
-                    TestLogging::test_printf("Verify Container:");
-                    m_tv_printer(m_verify_container);
-                    return {"Test '" + verifier.first + "' failed after applying '" + last_mod_name + "' [" + last_mod_operation + "] with reason: " + s.fail_reason};
+            TestLogging::test_printf("%s", step_result.message.c_str());
+            m_tc_printer(m_test_container);
+            TestLogging::test_printf("");
+
+            if (step_result.passed) {
+                auto last_mod_description = step_result.message;
+                for (auto& verifier : m_verifiers) {
+                    step_result = verifier.second(m_test_container, m_verify_container);
+                    if (!step_result.passed) {
+                        step_result.message = "Test '" + verifier.first + "' failed after applying '" + last_mod_name + "' [" + last_mod_description + "] with reason: " + step_result.message;
+                        break;
+                    }
                 }
+            }
+
+            if (!step_result.passed) {
+                TestLogging::test_printf("Test Container:");
+                m_tc_printer(m_test_container);
+                TestLogging::test_printf("Verify Container:");
+                m_tv_printer(m_verify_container);
+                return step_result;
             }
         }
 
