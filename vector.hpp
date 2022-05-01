@@ -1,36 +1,52 @@
 #pragma once
 
 #include "algorithm.hpp"
-#include "common_container_impl.hpp"
+#include "impl/iterator.hpp"
+#include "impl/member_types.hpp"
 #include "limits.hpp"
+#include "memory.hpp"
 #include "unique_ptr.hpp"
 #include "utility.hpp"
 
 namespace lw_std {
+// FIXME: this file only includes the definitions for the vector container https://en.cppreference.com/w/cpp/container/vector,
+//        not the header itself https://en.cppreference.com/w/cpp/header/vector
 
-// FIXME: add allocator support: vector (1) https://en.cppreference.com/w/cpp/container/vector
-template <typename T>
+template <typename T, typename Allocator = allocator<T>>
 class vector {
-   protected:
-    /*
-        Member types
-    */
-
-    LWSTD_COMMON_ITERATOR_TYPES(vector, T, unique_ptr<T>&);
-    LWSTD_COMMON_MEMBER_TYPES(T);
-
    public:
     /*
-        Member functions
+       MEMBER TYPES
+   */
+
+    LWSTD_COMMON_VALUE_TYPES(T);
+    LWSTD_COMMON_POINTER_TYPES(T);
+    LWSTD_COMMON_CONTAINER_TYPES(Allocator);
+
+    /*
+        MEMBER FUNCTIONS
     */
 
     // (constructor) (1) https://en.cppreference.com/w/cpp/container/vector/vector
     vector() noexcept = default;
 
     // FIXME: (constructor) (2) https://en.cppreference.com/w/cpp/container/vector/vector
+
     // FIXME: (constructor) (3) https://en.cppreference.com/w/cpp/container/vector/vector
+    constexpr vector(size_type count, const_reference value) noexcept {
+        resize(count, value);
+    }
+
     // FIXME: (constructor) (4) https://en.cppreference.com/w/cpp/container/vector/vector
+    constexpr vector(size_type count) noexcept {
+        resize(count);
+    }
+
     // FIXME: (constructor) (5) https://en.cppreference.com/w/cpp/container/vector/vector
+    template <class InputIt>
+    constexpr vector(InputIt first, InputIt last) {
+        insert(begin(), first, last);
+    }
 
     // (constructor) (6) https://en.cppreference.com/w/cpp/container/vector/vector
     constexpr vector(const vector<T>& other) noexcept {
@@ -50,26 +66,22 @@ class vector {
 
     // (destructor) https://en.cppreference.com/w/cpp/container/vector/~vector
     ~vector() noexcept {
-        if (m_data) {
-            delete[] m_data;
-            m_data = nullptr;
-            m_allocated_size = 0;
-            m_size = 0;
-        }
+        resize_impl(0);
     }
 
     // operator= (1) https://en.cppreference.com/w/cpp/container/vector/operator%3D
     constexpr vector& operator=(const vector<T>& other) noexcept {
-        for (size_type i = 0; i < m_allocated_size; ++i)
-            delete m_data[i];
-        if (m_allocated_size) delete[] m_data;
+        if (&other != this) {
+            reserve(other.size());
 
-        m_size = other.m_size;
-        m_allocated_size = other.m_allocated_size;
+            for (size_type i = 0; i < other.size() && i < m_size; ++i)
+                (*this)[i] = other[i];
 
-        m_data = new T*[m_allocated_size];
-        for (size_t i = 0; i < m_size; i++)
-            m_data[i] = new T((*other.m_data)[i]);
+            for (size_type i = m_size; i < other.size(); ++i)
+                m_allocator.construct(&m_data[i], other[i]);
+
+            m_size = other.size();
+        }
 
         return *this;
     }
@@ -90,7 +102,7 @@ class vector {
     constexpr void assign(size_type count, const_reference value) noexcept {
         resize(count);
         for (size_type i = 0; i < count; ++i)
-            *m_data[i] = value;
+            m_data[i] = value;
     }
 
     // assign (2) https://en.cppreference.com/w/cpp/container/vector/assign
@@ -117,7 +129,7 @@ class vector {
         if (pos > m_size - 1)
             return front();
         else
-            return *(m_data[pos]);
+            return m_data[pos];
     };
 
     // at https://en.cppreference.com/w/cpp/container/vector/at
@@ -126,40 +138,48 @@ class vector {
         if (pos > m_size - 1)
             return front();
         else
-            return *(m_data[pos]);
+            return m_data[pos];
     };
 
     // operator[] https://en.cppreference.com/w/cpp/container/vector/operator_at
     [[nodiscard]] constexpr reference operator[](size_type pos) noexcept {
-        return *(m_data[pos]);
+        return m_data[pos];
     };
 
     // operator[] https://en.cppreference.com/w/cpp/container/vector/operator_at
     [[nodiscard]] constexpr const_reference operator[](size_type pos) const noexcept {
-        return *(m_data[pos]);
+        return m_data[pos];
     };
 
     // front https://en.cppreference.com/w/cpp/container/vector/front
     [[nodiscard]] constexpr reference front() noexcept {
-        return *(m_data[0]);
+        return m_data[0];
     };
 
     // front https://en.cppreference.com/w/cpp/container/vector/front
     [[nodiscard]] constexpr const_reference front() const noexcept {
-        return *(m_data[0]);
+        return m_data[0];
     };
 
     // back https://en.cppreference.com/w/cpp/container/vector/back
     [[nodiscard]] constexpr reference back() noexcept {
-        return *(m_data[m_size - 1]);
+        return m_data[m_size - 1];
     };
 
     // back https://en.cppreference.com/w/cpp/container/vector/back
     [[nodiscard]] constexpr const_reference back() const noexcept {
-        return *(m_data[m_size - 1]);
+        return m_data[m_size - 1];
     };
 
-    // FIXME: data https://en.cppreference.com/w/cpp/container/vector/data
+    // data https://en.cppreference.com/w/cpp/container/vector/data
+    [[nodiscard]] constexpr pointer data() noexcept {
+        return m_data;
+    }
+
+    // data https://en.cppreference.com/w/cpp/container/vector/data
+    [[nodiscard]] constexpr const_pointer data() const noexcept {
+        return m_data;
+    }
 
     /*
         Iterators
@@ -220,7 +240,7 @@ class vector {
     // reserve https://en.cppreference.com/w/cpp/container/vector/reserve
     constexpr void reserve(size_type new_cap) noexcept {
         if (new_cap > m_allocated_size)
-            grow(new_cap - m_allocated_size);
+            resize_impl(new_cap);
     }
 
     // capacity https://en.cppreference.com/w/cpp/container/vector/capacity
@@ -230,7 +250,7 @@ class vector {
 
     // shrink_to_fit https://en.cppreference.com/w/cpp/container/vector/shrink_to_fit
     constexpr void shrink_to_fit() noexcept {
-        shrink(m_size);
+        resize_impl(m_size);
     }
 
     /*
@@ -240,7 +260,7 @@ class vector {
     // clear https://en.cppreference.com/w/cpp/container/vector/clear
     constexpr void clear() noexcept {
         for (size_type i = 0; i < m_size; ++i)
-            m_data[i].~unique_ptr();
+            m_allocator.destroy(&m_data[i]);
         m_size = 0;
     }
 
@@ -255,22 +275,27 @@ class vector {
     }
 
     // insert (3) https://en.cppreference.com/w/cpp/container/vector/insert
-    constexpr iterator insert(const_iterator& pos, size_type count, const_reference value) noexcept {
-        iterator it{pos};
-        for (size_type i = 0; i < count; ++i) {
-            it = emplace(it, value);
-        }
-        return it;
+    constexpr iterator insert(iterator pos, size_type count, const_reference value) noexcept {
+        auto index = index_from_iterator(pos);
+
+        for (size_type i = 0; i < count; ++i)
+            pos = emplace(pos, value);
+
+        return m_data[index];
     }
 
     // insert (4) https://en.cppreference.com/w/cpp/container/vector/insert
     template <typename InputIt>
     constexpr iterator insert(const_iterator& pos, InputIt first, InputIt last) noexcept {
-        iterator it{pos};
-        for (; first != last; ++first) {
-            it = emplace(it, *first);
+        auto index = index_from_iterator(pos);
+        auto start_index = index;
+
+        while (first != last) {
+            emplace(m_data[index++], *first);
+            first++;
         }
-        return it;
+
+        return m_data[start_index];
     }
 
     // FIXME: insert (5) https://en.cppreference.com/w/cpp/container/vector/insert
@@ -282,41 +307,44 @@ class vector {
         auto index = index_from_iterator(pos);
 
         if (m_size == m_allocated_size)
-            grow();
+            resize_impl(m_size + 8);
+
+        if (m_size == index) {
+            m_allocator.construct(&m_data[m_size], lw_std::forward<Args>(args)...);
+        } else {
+            m_allocator.construct(&m_data[m_size], lw_std::move(m_data[m_size - 1]));
+            shift(m_size - 1, index, -1);
+            m_data[index] = lw_std::move(T(lw_std::forward<Args>(args)...));
+        }
 
         m_size++;
-
-        shift_right(index, 1);
-        m_data[index] = new T{args...};
-
         return m_data[index];
     }
 
     // erase (1) https://en.cppreference.com/w/cpp/container/vector/erase
     constexpr iterator erase(const_iterator& pos) noexcept {
-        shift_left(index_from_iterator(pos), 1);
+        auto index = index_from_iterator(pos);
 
-        // NOTE: the last element was moved from and does not need to be destroyed
-        --m_size;
+        shift(index, m_size - 1, 1);
+        m_allocator.destroy(&m_data[--m_size]);
 
         return pos;
     }
 
     // erase (2) https://en.cppreference.com/w/cpp/container/vector/erase
     constexpr iterator erase(const_iterator& first, const_iterator& last) noexcept {
-        iterator it = first;
+        size_type start_idx = index_from_iterator(first);
+        size_type end_idx = index_from_iterator(last);
+        size_type num_deleted = end_idx - start_idx;
 
-        // NOTE: as we shift left after every deletion, the start iterator pos never changes
-        size_type idx = index_from_iterator(first);
+        if (num_deleted > 0) {
+            shift(start_idx, m_size - num_deleted, num_deleted);
 
-        for (; it != last; ++it) {
-            shift_left(idx, 1);
-
-            // NOTE: no need to call delete, because after the shift the last element was moved from
-            m_size--;
+            for (size_t i = 0; i < num_deleted; ++i)
+                m_allocator.destroy(&m_data[--m_size]);
         }
 
-        return first + 1;
+        return first;
     }
 
     // push_back (1) https://en.cppreference.com/w/cpp/container/vector/push_back
@@ -326,61 +354,59 @@ class vector {
 
     // push_back (2) https://en.cppreference.com/w/cpp/container/vector/push_back
     constexpr void push_back(T&& value) noexcept {
-        emplace_back(value);
+        emplace_back(lw_std::move(value));
     };
 
     // emplace_back https://en.cppreference.com/w/cpp/container/vector/emplace_back
     template <typename... Args>
     constexpr reference emplace_back(Args&&... args) noexcept {
-        return *emplace(end(), args...);
+        return *emplace(end(), lw_std::forward<Args>(args)...);
     }
 
     // pop_back https://en.cppreference.com/w/cpp/container/vector/pop_back
     constexpr void pop_back() noexcept {
         if (m_size > 0) {
-            // NOTE: destroy popped element
-            delete m_data[--m_size].release();
+            m_allocator.destroy(&m_data[--m_size]);
         }
     }
 
     // resize (1) https://en.cppreference.com/w/cpp/container/vector/resize
     constexpr void resize(size_type count) noexcept {
-        // NOTE: additional default-inserted elements are appended
-        resize(count, {});
+        resize_impl(count, T());
     }
 
     // resize (2) https://en.cppreference.com/w/cpp/container/vector/resize
     constexpr void resize(size_type count, const_reference value) noexcept {
-        if (count > m_allocated_size) {
-            size_type diff = count < m_allocated_size;
-            reserve(count);
-            // NOTE: additional copies of value are appended
-            for (size_type i = 0; i < diff; ++i)
-                push_back(value);
-        } else if (m_allocated_size > count)
-            shrink(count);
+        resize_impl(count, value);
     }
 
     // swap https://en.cppreference.com/w/cpp/container/vector/swap
     constexpr void swap(vector& other) noexcept {
-        swap(*this, other);
+        lw_std::swap(*this, other);
     }
 
-   protected:
-    class iterator_ {
+    class iterator : public iterator_impl<iterator, T> {
+        friend iterator_impl<iterator, T>;
+        friend vector;
+
        public:
-        unique_ptr<T>* m_data{nullptr};
+        iterator() = default;
 
-        iterator_() = default;
-
-        iterator_(unique_ptr<T>& data)
+        iterator(reference data)
             : m_data(&data) {}
 
-        T& get() {
-            return *m_data->get();
+       private:
+        T* m_data{nullptr};
+
+        T* get() {
+            return m_data;
         }
 
-        bool equals(const iterator_& other) const {
+        const T* get() const {
+            return m_data;
+        }
+
+        bool equals(const iterator& other) const {
             return m_data == other.m_data;
         }
 
@@ -388,55 +414,52 @@ class vector {
             m_data += n;
         }
 
-        void copy_impl(const iterator_& other) {
+        void copy(const iterator& other) {
             m_data = other.m_data;
         }
 
-        void move_impl(iterator_& other) {
-            m_data = move(other.m_data);
+        void move(iterator& other) {
+            m_data = lw_std::move(other.m_data);
         }
     };
 
-    unique_ptr<T>* m_data{nullptr};
+    pointer m_data{nullptr};
+    allocator_type m_allocator{};
 
     size_type m_size{0};
     size_type m_allocated_size{0};
 
-    void shift_left(size_type from, size_type by) noexcept {
-        for (size_type j = from + by; j < m_size; ++j)
-            m_data[j - by] = move(m_data[j]);
+    void shift(size_type from, size_type to, int by) noexcept {
+        auto dir = by > 0 ? 1 : -1;
+        while (from != to) {
+            m_data[from] = lw_std::move(m_data[from + by]);
+            from += dir;
+        }
     }
 
-    void shift_right(ssize_t from, size_type by) noexcept {
-        for (ssize_t j = m_size - 1 - by; j >= from; --j)
-            m_data[j + by] = move(m_data[j]);
-    }
+    void resize_impl(size_type new_size) noexcept {
+        auto new_data = new_size > 0 ? m_allocator.allocate(new_size) : nullptr;
 
-    void grow(size_type by = 8) noexcept {
-        size_type new_size = m_allocated_size + by;
-        auto new_data = new unique_ptr<T>[new_size];
+        for (size_type i = 0; i < m_size && i < new_size; ++i)
+            m_allocator.construct(&new_data[i], lw_std::move(m_data[i]));
 
-        for (size_type i = 0; i < m_size; i++)
-            new_data[i] = move(m_data[i]);
+        for (size_type i = new_size; i < m_size; ++i)
+            m_allocator.destroy(&m_data[i]);
 
         if (m_allocated_size != 0)
-            delete[] m_data;
+            m_allocator.deallocate(m_data, m_allocated_size);
 
+        m_size = min_of(m_size, new_size);
         m_allocated_size = new_size;
         m_data = new_data;
     }
 
-    void shrink(size_type to_size) noexcept {
-        auto new_data = new unique_ptr<T>[to_size];
+    void resize_impl(size_type count, const_reference value) noexcept {
+        resize_impl(count);
 
-        for (size_type i = 0; i < to_size; i++)
-            new_data[i] = move(m_data[i]);
-
-        if (m_allocated_size != 0)
-            delete[] m_data;
-
-        m_allocated_size = to_size;
-        m_data = new_data;
+        while (m_size < count) {
+            emplace_back(value);
+        }
     }
 
     size_type index_from_iterator(const_iterator& it) const noexcept {
@@ -445,7 +468,7 @@ class vector {
 };
 
 /*
-    Non-member functions
+    NON-MEMBER FUNCTIONS
 */
 
 // operator== (1) https://en.cppreference.com/w/cpp/container/vector/operator_cmp
