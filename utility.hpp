@@ -10,28 +10,29 @@
 #endif
 
 namespace lw_std {
+// utility header https://en.cppreference.com/w/cpp/header/utility
 
 /*
     Functions
 */
 
-// swap (1) https://en.cppreference.com/w/cpp/algorithm/swap
-template <typename T>
-constexpr void swap(T& a, T& b) noexcept {
-    T temp = move(a);
-    a = move(b);
-    b = move(temp);
-}
-
-// FIXME: swap (2) https://en.cppreference.com/w/cpp/algorithm/swap
-
-// remove_reference for move https://en.cppreference.com/w/cpp/utility/move
+// remove_reference for move and forward https://en.cppreference.com/w/cpp/utility/move
 template <typename T>
 struct remove_reference { typedef T type; };
 template <typename T>
 struct remove_reference<T&> { typedef T type; };
 template <typename T>
 struct remove_reference<T&&> { typedef T type; };
+
+template <typename T>
+constexpr T&& forward(typename remove_reference<T>::type& t) noexcept {
+    return (T &&)(t);
+}
+
+template <typename T>
+constexpr T&& forward(typename remove_reference<T>::type&& t) noexcept {
+    return (T &&)(t);
+}
 
 // move https://en.cppreference.com/w/cpp/utility/move
 template <typename T>
@@ -94,16 +95,14 @@ struct pair {
     // (constructor) (6/7/10) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
     constexpr pair(const pair<U1, U2>&& p) noexcept
-        : first(move(p.first)), second(move(p.second)){};
+        : first(lw_std::move(p.first)), second(lw_std::move(p.second)){};
 
     // FIXME: (constructor) (9) https://en.cppreference.com/w/cpp/utility/pair/pair
 
     // FIXME: Meant for compatibility with std::pair, but may match any type with "pair" syntax (which may not be a bad thing?)
-    template <template <typename, typename> typename S, typename A, typename B>
-    pair(const S<A, B>& other) {
-        first = other.first;
-        second = other.second;
-    }
+    template <template <typename, typename> class S, typename A, typename B>
+    pair(const S<A, B>& p) noexcept
+        : first(p.first), second(p.second){};
 
     // operator= (1/3) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
@@ -202,12 +201,12 @@ constexpr bool operator>=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs) noex
 // FIXME: operator<=> (7)  https://en.cppreference.com/w/cpp/utility/pair/operator_cmp
 
 // NOTE: These operators are meant for compatibility with std::pair, but they may catch more types because of the generic template
-template <template <typename, typename> typename T, template <typename, typename> typename U, typename A, typename B, typename C, typename D>
+template <template <typename, typename> class T, template <typename, typename> class U, typename A, typename B, typename C, typename D>
 constexpr bool operator==(const T<A, B>& lhs, const U<C, D>& rhs) {
     return lhs.first == rhs.first && lhs.second == rhs.second;
 }
 
-template <template <typename, typename> typename T, template <typename, typename> typename U, typename A, typename B, typename C, typename D>
+template <template <typename, typename> class T, template <typename, typename> class U, typename A, typename B, typename C, typename D>
 constexpr bool operator!=(const T<A, B>& lhs, const U<C, D>& rhs) {
     return !operator==(lhs, rhs);
 }
