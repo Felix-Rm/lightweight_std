@@ -18,7 +18,7 @@
 class NonTrivial {
    public:
     NonTrivial() {
-        m_data = new unsigned{(unsigned) -1};
+        m_data = new unsigned{(unsigned)-1};
     };
 
     NonTrivial(unsigned a) {
@@ -151,7 +151,7 @@ class ContainerTester {
 
             if (curent_size > 0) {
                 ssize_t tolerance = (rand() % (m_median_size / 2)) - m_median_size / 4;
-                ssize_t current_size_with_tolerance = (ssize_t) curent_size + tolerance;
+                ssize_t current_size_with_tolerance = (ssize_t)curent_size + tolerance;
 
                 op = current_size_with_tolerance > m_median_size ? operations::SHRINK : operations::GROW;
 
@@ -385,7 +385,7 @@ class ContainerTester {
     }
 
     static TestLogging::test_result_t verify_element_position_with_operator_brackets_for_map(const test_container_t& tc, const verify_container_t& vc) {
-        return verify_element_position_with_operator_brackets_for_map_templated((test_container_t&) tc, (verify_container_t&) vc);
+        return verify_element_position_with_operator_brackets_for_map_templated((test_container_t&)tc, (verify_container_t&)vc);
     }
 
     static TestLogging::test_result_t verify_element_position_with_operator_brackets(const test_container_t& tc, const verify_container_t& vc) {
