@@ -1,13 +1,16 @@
 #pragma once
 
-#include "common_container_impl.hpp"
+#include "algorithm.hpp"
+#include "impl/iterator.hpp"
+#include "impl/member_types.hpp"
+#include "memory.hpp"
 #include "unique_ptr.hpp"
 #include "utility.hpp"
 
 namespace lw_std {
 
 // lw_std implementation of std::list
-template <typename T>
+template <typename T, typename Allocator = allocator<T>>
 class list {
    protected:
     struct list_item;
@@ -17,8 +20,8 @@ class list {
         list_item* prev;
     } list_item_t;
 
-    LWSTD_COMMON_ITERATOR_TYPES(list, T, list_item*);
-    LWSTD_COMMON_MEMBER_TYPES(T);
+    LWSTD_COMMON_CONTAINER_TYPES(Allocator);
+    LWSTD_COMMON_VALUE_TYPES(T);
 
    public:
     ~list() {
@@ -36,10 +39,12 @@ class list {
     };
 
     list<T>& operator=(const list<T>& other) {
-        clear();
+        if (&other != this) {
+            clear();
 
-        for (auto& item : other) {
-            push_back(item);
+            for (auto& item : other) {
+                push_back(item);
+            }
         }
 
         return *this;
@@ -47,9 +52,9 @@ class list {
 
     list<T>& operator=(list<T>&& other) {
         if (&other != this) {
-            swap(m_front, other.m_front);
-            swap(m_back, other.m_back);
-            swap(m_size, other.m_size);
+            lw_std::swap(m_front, other.m_front);
+            lw_std::swap(m_back, other.m_back);
+            lw_std::swap(m_size, other.m_size);
         }
         return *this;
     }
@@ -114,7 +119,7 @@ class list {
 
     template <typename... Args>
     reference emplace_back(Args... arguments) {
-        return emplace(nullptr, arguments...);
+        return *emplace(nullptr, arguments...);
     }
 
     void push_back(const_reference elt) {
@@ -123,7 +128,7 @@ class list {
 
     template <typename... Args>
     reference emplace_front(Args... arguments) {
-        return emplace(m_front, arguments...);
+        return *emplace(m_front, arguments...);
     }
 
     void push_front(const_reference elt) {
@@ -138,11 +143,11 @@ class list {
     }
 
     template <typename... Args>
-    reference emplace(const iterator& it, Args... arguments) {
+    iterator emplace(const iterator& it, Args... arguments) {
         list_item_t* new_item = new list_item_t();
         new_item->elt = new T{arguments...};
 
-        return *insert_list_item(it, new_item);
+        return insert_list_item(it, new_item);
     }
 
     void pop_back() {
@@ -175,7 +180,7 @@ class list {
     }
 
     const_iterator find(const_reference elt) const {
-        return find_helper(elt, match_function);
+        return lw_std::find(begin(), end(), elt);
     }
 
     iterator erase(const_iterator& it) {
@@ -198,21 +203,27 @@ class list {
         return return_it;
     }
 
-   protected:
-    class iterator_ {
+    class iterator : public iterator_impl<iterator, T> {
+        friend iterator_impl<iterator, T>;
+        friend list;
+
        public:
-        list_item_t* m_data;
+        iterator() = default;
 
-        iterator_() = default;
-
-        iterator_(list_item_t* it)
+        iterator(list_item_t* it)
             : m_data(it) {}
 
-        T& get() {
-            return *(m_data->elt);
+       private:
+        list_item_t* m_data;
+        T* get() {
+            return m_data->elt.get();
         }
 
-        bool equals(const iterator_& rhs) const {
+        const T* get() const {
+            return m_data->elt.get();
+        }
+
+        bool equals(const iterator& rhs) const {
             return m_data == rhs.m_data;
         }
 
@@ -224,12 +235,12 @@ class list {
                 m_data = m_data->prev;
         }
 
-        void copy_impl(const iterator_& other) {
+        void copy(const iterator& other) {
             m_data = other.m_data;
         }
 
-        void move_impl(iterator_& other) {
-            m_data = move(other.m_data);
+        void move(iterator& other) {
+            m_data = lw_std::move(other.m_data);
         }
     };
 
@@ -237,21 +248,6 @@ class list {
     list_item_t* m_back = nullptr;
 
     size_type m_size = 0;
-
-    static constexpr bool match_function(const_reference a, const_reference b) {
-        return a == b;
-    }
-
-    template <typename Type, typename Predicate>
-    const_iterator find_helper(const Type& elt, Predicate is_match) const {
-        list_item_t* item = m_front;
-        while (item) {
-            if (is_match(*(item->elt), elt))
-                return const_iterator(item);
-            item = item->next;
-        }
-        return end();
-    }
 
     iterator insert_list_item(const_iterator& it, list_item* new_item) {
         // if we are inserting before end, we are the new back and have no next elt
