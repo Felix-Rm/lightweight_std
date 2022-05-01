@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utility.hpp"
+
 namespace lw_std {
 
 /*
@@ -114,7 +116,7 @@ ForwardIt remove_if(ForwardIt first, ForwardIt last, UnaryPredicate p) {
     if (first != last)
         for (ForwardIt i = first; ++i != last;)
             if (!p(*i))
-                *first++ = move(*i);
+                *first++ = lw_std::move(*i);
     return first;
 }
 

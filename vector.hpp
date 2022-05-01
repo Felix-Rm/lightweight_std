@@ -41,7 +41,7 @@ class vector {
 
     // (constructor) (8) https://en.cppreference.com/w/cpp/container/vector/vector
     constexpr vector(vector<T>&& other) noexcept {
-        operator=(other);
+        operator=(lw_std::move(other));
     };
 
     // FIXME: (constructor) (9) https://en.cppreference.com/w/cpp/container/vector/vector
@@ -77,9 +77,9 @@ class vector {
     // operator= (2) https://en.cppreference.com/w/cpp/container/vector/operator%3D
     constexpr vector& operator=(vector<T>&& other) noexcept {
         if (&other != this) {
-            swap(m_data, other.m_data);
-            swap(m_size, other.m_size);
-            swap(m_allocated_size, other.m_allocated_size);
+            lw_std::swap(m_data, other.m_data);
+            lw_std::swap(m_size, other.m_size);
+            lw_std::swap(m_allocated_size, other.m_allocated_size);
         }
         return *this;
     }
@@ -251,7 +251,7 @@ class vector {
 
     // insert (2) https://en.cppreference.com/w/cpp/container/vector/insert
     constexpr iterator insert(const_iterator& pos, T&& value) noexcept {
-        return emplace(pos, value);
+        return emplace(pos, lw_std::move(value));
     }
 
     // insert (3) https://en.cppreference.com/w/cpp/container/vector/insert

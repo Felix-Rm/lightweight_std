@@ -32,7 +32,7 @@ class list {
     };
 
     list(list<T>&& other) {
-        operator=(other);
+        operator=(lw_std::move(other));
     };
 
     list<T>& operator=(const list<T>& other) {

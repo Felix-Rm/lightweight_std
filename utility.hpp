@@ -39,6 +39,16 @@ constexpr typename remove_reference<T>::type&& move(T&& t) noexcept {
     return (typename remove_reference<T>::type &&)(t);
 };
 
+// swap (1) https://en.cppreference.com/w/cpp/algorithm/swap
+template <typename T>
+constexpr void swap(T& a, T& b) noexcept {
+    T temp = lw_std::move(a);
+    a = lw_std::move(b);
+    b = lw_std::move(temp);
+}
+
+// FIXME: swap (2) https://en.cppreference.com/w/cpp/algorithm/swap
+
 /*
     Classes
 */
@@ -74,7 +84,7 @@ struct pair {
     // (constructor) (3) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
     constexpr pair(U1&& t, U2&& u) noexcept
-        : first(move(t)), second(move(u)){};
+        : first(lw_std::move(t)), second(lw_std::move(u)){};
 
     // (constructor) (4/5/8) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
@@ -112,15 +122,15 @@ struct pair {
     // operator= (5/7) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
     constexpr pair& operator=(pair<U1, U2>&& other) noexcept {
-        first = move(other.first);
-        second = move(other.second);
+        first = lw_std::move(other.first);
+        second = lw_std::move(other.second);
     };
 
     // operator= (6/8) https://en.cppreference.com/w/cpp/utility/pair/pair
     template <typename U1 = T1, typename U2 = T2>
     constexpr const pair& operator=(pair<U1, U2>&& other) const noexcept {
-        first = move(other.first);
-        second = move(other.second);
+        first = lw_std::move(other.first);
+        second = lw_std::move(other.second);
     };
 
     // swap (1/2) https://en.cppreference.com/w/cpp/utility/pair/swap
@@ -136,13 +146,13 @@ struct pair {
 // make_pair https://en.cppreference.com/w/cpp/utility/pair/make_pair
 template <typename T1, typename T2>
 constexpr pair<T1, T2> make_pair(T1 t, T2 u) noexcept {
-    return {move(t), move(u)};
+    return {lw_std::move(t), lw_std::move(u)};
 }
 
 // make_pair https://en.cppreference.com/w/cpp/utility/pair/make_pair
 template <typename T1, typename T2>
 constexpr pair<T1, T2> make_pair(T1&& t, T2&& u) noexcept {
-    return {move(t), move(u)};
+    return {lw_std::move(t), lw_std::move(u)};
 }
 
 // operator== (1)  https://en.cppreference.com/w/cpp/utility/pair/operator_cmp
