@@ -13,12 +13,12 @@ namespace lw_std {
 template <typename T, typename Allocator = allocator<T>>
 class list {
    protected:
-    struct list_item;
-    typedef struct list_item {
+    struct list_item_t;
+    struct list_item_t {
         unique_ptr<T> elt;
-        list_item* next;
-        list_item* prev;
-    } list_item_t;
+        list_item_t* next;
+        list_item_t* prev;
+    };
 
     LWSTD_COMMON_CONTAINER_TYPES(Allocator);
     LWSTD_COMMON_VALUE_TYPES(T);
@@ -249,7 +249,7 @@ class list {
 
     size_type m_size = 0;
 
-    iterator insert_list_item(const_iterator& it, list_item* new_item) {
+    iterator insert_list_item(const_iterator& it, list_item_t* new_item) {
         // if we are inserting before end, we are the new back and have no next elt
         if (it.m_data == nullptr) {
             if (m_back) {

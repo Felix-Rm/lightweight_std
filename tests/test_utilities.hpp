@@ -145,7 +145,7 @@ class ContainerTester {
 
         for (size_t i = 0; i < num; ++i) {
             TestLogging::test_result_t step_result;
-            operation_t op = operations::GROW;
+            operation op = operation::GROW;
 
             auto curent_size = m_size_getter(m_test_container);
 
@@ -153,21 +153,21 @@ class ContainerTester {
                 ssize_t tolerance = (rand() % (m_median_size / 2)) - m_median_size / 4;
                 ssize_t current_size_with_tolerance = (ssize_t)curent_size + tolerance;
 
-                op = current_size_with_tolerance > m_median_size ? operations::SHRINK : operations::GROW;
+                op = current_size_with_tolerance > m_median_size ? operation::SHRINK : operation::GROW;
 
                 if (rand() % 100 < 5)
-                    op = operations::NEUTRAL;
+                    op = operation::NEUTRAL;
             }
 
             // TestLogging::test_printf("running %s operation, size = %ld", op == operations::GROW ? "grow" : "shrink", curent_size);
 
             std::string last_mod_name = "";
 
-            if (op == operations::GROW && m_grow_modifiers.size()) {
+            if (op == operation::GROW && m_grow_modifiers.size()) {
                 auto it = random_choice(m_grow_modifiers);
                 last_mod_name = it->first;
                 step_result = it->second(m_test_container, m_verify_container, m_generator);
-            } else if (op == operations::NEUTRAL && m_neutral_modifiers.size()) {
+            } else if (op == operation::NEUTRAL && m_neutral_modifiers.size()) {
                 auto it = random_choice(m_neutral_modifiers);
                 last_mod_name = it->first;
                 step_result = it->second(m_test_container, m_verify_container, m_generator);
@@ -1097,11 +1097,11 @@ class ContainerTester {
         return "(" + to_string(t.first) + ", " + to_string(t.second) + ")";
     }
 
-    typedef enum operations {
+    enum operation {
         SHRINK,
         NEUTRAL,
         GROW
-    } operation_t;
+    };
 
     ssize_t m_median_size = 25;
 

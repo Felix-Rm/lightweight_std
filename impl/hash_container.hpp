@@ -20,33 +20,33 @@ class hash_container_impl {
         END
     };
 
-    typedef struct bucket {
+    struct bucket_t {
         unique_ptr<T> elt{};
         bucket_state state{CLEAN};
 
-        bucket() = default;
+        bucket_t() = default;
 
-        bucket(const bucket& other) {
+        bucket_t(const bucket_t& other) {
             operator=(other);
         }
 
-        bucket(bucket&& other) {
+        bucket_t(bucket_t&& other) {
             operator=(lw_std::move(other));
         }
 
-        constexpr bucket& operator=(const bucket& other) {
+        constexpr bucket_t& operator=(const bucket_t& other) {
             if (other.elt)
                 elt = new T{*other.elt.get()};
             state = other.state;
             return *this;
         }
 
-        constexpr bucket& operator=(bucket&& other) {
+        constexpr bucket_t& operator=(bucket_t&& other) {
             elt = lw_std::move(other.elt);
             state = other.state;
             return *this;
         }
-    } bucket_t;
+    };
 
     LWSTD_COMMON_CONTAINER_TYPES(Allocator);
     LWSTD_COMMON_VALUE_TYPES(T);
