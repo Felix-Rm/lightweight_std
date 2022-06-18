@@ -2,9 +2,9 @@
 
 #include <unordered_map>
 
-#include "../unordered_map.hpp"
 #include "ftest/test_logging.hpp"
 #include "test_utilities.hpp"
+#include "unordered_map.hpp"
 
 class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, lw_std::unordered_map, std::unordered_map> {
     friend ContainerTestDefaultMixin;

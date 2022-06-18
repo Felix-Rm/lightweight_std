@@ -2,8 +2,8 @@
 
 #include <list>
 
-#include "../list.hpp"
 #include "ftest/test_logging.hpp"
+#include "list.hpp"
 #include "test_utilities.hpp"
 
 class TestLwList : public ContainerTestDefaultMixin<TestLwList, lw_std::list, std::list> {

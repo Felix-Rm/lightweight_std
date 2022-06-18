@@ -2,9 +2,9 @@
 
 #include <vector>
 
-#include "../vector.hpp"
 #include "ftest/test_logging.hpp"
 #include "test_utilities.hpp"
+#include "vector.hpp"
 
 class TestLwVector : public ContainerTestDefaultMixin<TestLwVector, lw_std::vector, std::vector> {
     friend ContainerTestDefaultMixin;
