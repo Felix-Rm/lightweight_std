@@ -4,7 +4,6 @@
 #include "impl/iterator.hpp"
 #include "impl/member_types.hpp"
 #include "memory.hpp"
-#include "unique_ptr.hpp"
 #include "utility.hpp"
 
 namespace lw_std {

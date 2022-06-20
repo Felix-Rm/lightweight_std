@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "ftest/test_logging.hpp"
+#include "impl/pair.hpp"
 
 /*
     This is a non default-constructable object with heap allocations to check if destructor is called aproproately
