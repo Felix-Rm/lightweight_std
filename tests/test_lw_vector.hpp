@@ -65,5 +65,5 @@ class TestLwVector : public ContainerTestDefaultMixin<TestLwVector, lw_std::vect
         tester.add_neutral_modifier("swap", ContainerTestType::modify_by_swap);
 
         return tester.run_operations(operation_count);
-    };
+    }
 };

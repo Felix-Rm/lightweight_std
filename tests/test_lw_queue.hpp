@@ -11,7 +11,7 @@ class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue,
 
    private:
     template <typename Container>
-    static void printer(const Container& c) {
+    static void printer(const Container&) {
     }
 
     template <typename ContainerTestType>
@@ -31,5 +31,5 @@ class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue,
         tester.add_verifier("back element position", ContainerTestType::verify_back_element_position);
 
         return tester.run_operations(operation_count);
-    };
+    }
 };

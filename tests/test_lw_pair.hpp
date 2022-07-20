@@ -16,5 +16,5 @@ class TestLwPair {
         if (copy.first != 0 || copy.second != "test") return {"copy"};
 
         return {};
-    };
+    }
 };

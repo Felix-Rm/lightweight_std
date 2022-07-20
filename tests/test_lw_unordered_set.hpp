@@ -23,7 +23,6 @@ class TestLwUnorderedSet : public ContainerTestDefaultMixin<TestLwUnorderedSet, 
         (void)tester.tc().empty();  // just test if it compiles
         tester.add_verifier("size", ContainerTestType::verify_size);
         (void)tester.tc().max_size();  // just test if it compiles
-        (void)tester.tc().capacity();  // just test if it compiles
 
         tester.add_shrink_modifier("clear", ContainerTestType::shrink_by_clear);
 
@@ -51,5 +50,5 @@ class TestLwUnorderedSet : public ContainerTestDefaultMixin<TestLwUnorderedSet, 
         tester.add_neutral_modifier("reserve", ContainerTestType::modify_by_reserve);
 
         return tester.run_operations(operation_count);
-    };
+    }
 };
