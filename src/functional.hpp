@@ -1,10 +1,10 @@
+// functional header https://en.cppreference.com/w/cpp/header/functional
 #pragma once
 
 #include "string.hpp"
 #include "utility.hpp"
 
 namespace lw_std {
-// functional header https://en.cppreference.com/w/cpp/header/functional
 
 /*
     CLASSES
@@ -17,7 +17,7 @@ namespace lw_std {
 // equal_to https://en.cppreference.com/w/cpp/utility/functional/equal_to
 template <class T = void>
 struct equal_to {
-    constexpr bool operator()(const T& lhs, const T& rhs) {
+    [[nodiscard]] constexpr bool operator()(const T& lhs, const T& rhs) const {
         return lhs == rhs;
     }
 };
@@ -32,8 +32,8 @@ struct hash {
     typedef T argument_type;
     typedef size_t result_type;
 
-    size_t operator()(const T& key) const {
-        return key;
+    [[nodiscard]] constexpr result_type operator()(const argument_type& key) const {
+        return static_cast<result_type>(key);
     }
 };
 
@@ -43,35 +43,35 @@ struct hash<lw_std::string> {
     typedef lw_std::string argument_type;
     typedef size_t result_type;
 
-    size_t operator()(const lw_std::string& key) const {
-        // NOTE:: key.data() is not available on Arduino
+    [[nodiscard]] size_t operator()(const argument_type& key) const {
+        // NOTE:: key.data() is not available on arduino
         return hash_bytes(key.c_str(), key.length());
     }
 
    private:
-    size_t hash_bytes(const void* ptr, size_t len) const {
+    [[nodiscard]] constexpr size_t hash_bytes(const char* ptr, size_t len) const {
         const size_t m = 0x5bd1e995;
-        size_t hash = m;
+        size_t current_hash = m;
 
         auto mix = [&](uint32_t val) {
             val *= m;
             val ^= val >> 23;
             val *= m;
-            hash *= m;
-            hash ^= val;
+            current_hash *= m;
+            current_hash ^= val;
         };
 
         while (len >= 4) {
             len -= sizeof(uint32_t);
-            mix(*((uint32_t*)ptr + len));
+            mix(*reinterpret_cast<const uint32_t*>(ptr + len));
         }
 
         // FIXME:
         // mix(*((uint32_t*) ptr));
 
-        hash ^= hash >> 11;
-        return hash;
-    };
+        current_hash ^= current_hash >> 11;
+        return current_hash;
+    }
 };
 
 }  // namespace lw_std

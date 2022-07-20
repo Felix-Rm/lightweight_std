@@ -1,12 +1,12 @@
+// queue header https://en.cppreference.com/w/cpp/header/queue
 #pragma once
 
 #include "impl/member_types.hpp"
 #include "list.hpp"
 
 namespace lw_std {
-// FIXME: this file only includes the definitions for the queue container https://en.cppreference.com/w/cpp/container/queue,
-//        not the header itself https://en.cppreference.com/w/cpp/header/queue
 
+// queue https://en.cppreference.com/w/cpp/container/queue,
 template <typename T, typename Container = list<T>>
 class queue {
    public:
@@ -14,7 +14,7 @@ class queue {
         MEMBER TYPES
     */
 
-    LWSTD_COMMON_VALUE_TYPES(T);
+    LWSTD_COMMON_VALUE_TYPES(T)
     typedef Container container_type;
 
     /*
@@ -22,25 +22,25 @@ class queue {
     */
 
     // (constructor) (1) https://en.cppreference.com/w/cpp/container/queue/queue
-    queue() = default;
+    constexpr queue() = default;
 
     // (constructor) (2) https://en.cppreference.com/w/cpp/container/queue/queue
-    explicit queue(const Container& cont)
-        : m_container(cont){};
+    constexpr explicit queue(const Container& cont)
+        : m_container(cont){}
 
     // (constructor) (3) https://en.cppreference.com/w/cpp/container/queue/queue
-    explicit queue(const Container&& cont)
-        : m_container(lw_std::move(cont)){};
+    constexpr explicit queue(const Container&& cont)
+        : m_container(lw_std::move(cont)){}
 
     // (constructor) (4) https://en.cppreference.com/w/cpp/container/queue/queue
-    queue(const queue& other) {
+    constexpr queue(const queue& other) {
         operator=(other);
-    };
+    }
 
     // (constructor) (5) https://en.cppreference.com/w/cpp/container/queue/queue
-    queue(queue&& other) {
+    constexpr queue(queue&& other) {
         operator=(lw_std::move(other));
-    };
+    }
 
     // FIXME: (constructor) (6) https://en.cppreference.com/w/cpp/container/queue/queue
     // FIXME: (constructor) (7) https://en.cppreference.com/w/cpp/container/queue/queue
@@ -110,16 +110,16 @@ class queue {
     // push (1) https://en.cppreference.com/w/cpp/container/queue/push
     constexpr void push(const value_type& value) {
         m_container.emplace_back(value);
-    };
+    }
 
     // push (2) https://en.cppreference.com/w/cpp/container/queue/push
     constexpr void push(value_type&& value) {
         m_container.emplace_back(lw_std::move(value));
-    };
+    }
 
     constexpr void pop() {
         m_container.pop_front();
-    };
+    }
 
     template <typename... Args>
     constexpr reference emplace(Args... args) {

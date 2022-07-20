@@ -1,77 +1,76 @@
 #pragma once
 
-template <typename it, typename T>
-class iterator_impl {
-   private:
-    it& actual() {
-        return *(it*)this;
-    }
+namespace lw_std {
 
-    const it& actual() const {
-        return *(it*)this;
-    }
-
+template <typename it, typename non_const_it>
+class iterator_impl : public it {
    public:
-    iterator_impl() = default;
+    typedef it underlying_type;
 
-    iterator_impl(const it& other) {
-        actual().copy(other);
-    }
+    constexpr iterator_impl(const typename it::data_type& data)
+        : it(data) {}
 
-    iterator_impl(it&& other) {
-        actual().move(other);
-    }
+    constexpr iterator_impl(const non_const_it& other)
+        : it(other) {}
 
-    it& operator=(const it& other) {
+    constexpr iterator_impl(const iterator_impl& other)
+        : it(static_cast<const it&>(other)) {}
+
+    constexpr iterator_impl(iterator_impl&& other)
+        : it(static_cast<const it&&>(other)) {}
+
+    constexpr iterator_impl& operator=(const iterator_impl& other) {
         if (&other != this)
-            actual().copy(other);
+            it::operator=(static_cast<const it&>(other));
         return *this;
     }
 
-    it& operator=(it&& other) {
+    constexpr iterator_impl& operator=(iterator_impl&& other) {
         if (&other != this)
-            actual().move(other);
-        return actual();
+            it::operator=(static_cast<it&&>(other));
+        return *this;
     }
 
-    it& operator++() {
-        actual().advance(1);
-        return actual();
+    constexpr iterator_impl& operator++() {
+        it::advance(1);
+        return *this;
     }
 
-    it operator++(int) {
-        it tmp(actual());
-        actual().advance(1);
+    constexpr iterator_impl operator++(int) {
+        iterator_impl tmp(*this);
+        it::advance(1);
         return tmp;
     }
 
-    it operator+(int n) const {
-        it tmp(actual());
+    constexpr iterator_impl operator+(int n) const {
+        iterator_impl tmp(*this);
         tmp.advance(n);
         return tmp;
     }
 
-    bool operator==(const it& rhs) const {
-        return ((it*)this)->equals(rhs);
+    [[nodiscard]] constexpr bool operator==(const iterator_impl& rhs) const {
+        return it::equal(static_cast<const it&>(rhs));
     }
 
-    bool operator!=(const it& rhs) const {
-        return !operator==(rhs);
+    [[nodiscard]] constexpr bool operator!=(const iterator_impl& rhs) const {
+        return !it::equal(static_cast<const it&>(rhs));
     }
 
-    T& operator*() {
-        return *actual().get();
+    [[nodiscard]] constexpr auto& operator*() {
+        return *it::get();
     }
 
-    T* operator->() {
-        return actual().get();
+    [[nodiscard]] constexpr auto* operator->() {
+        return it::get();
     }
 
-    const T& operator*() const {
-        return *actual().get();
-    };
+    [[nodiscard]] constexpr const auto& operator*() const {
+        return *it::get();
+    }
 
-    const T* operator->() const {
-        return actual().get();
-    };
+    [[nodiscard]] constexpr const auto* operator->() const {
+        return it::get();
+    }
 };
+
+}  // namespace lw_std

@@ -1,3 +1,4 @@
+// utility header https://en.cppreference.com/w/cpp/header/utility
 #pragma once
 
 #ifdef ARDUINO
@@ -19,7 +20,7 @@ namespace lw_std {
 
 // swap (1) https://en.cppreference.com/w/cpp/algorithm/swap
 template <typename T>
-constexpr void swap(T& a, T& b) noexcept {
+constexpr void swap(T& a, T& b) {
     T temp = lw_std::move(a);
     a = lw_std::move(b);
     b = lw_std::move(temp);
