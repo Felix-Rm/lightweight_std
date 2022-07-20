@@ -6,7 +6,7 @@
 
 class TestLwPair {
    public:
-    static TestLogging::test_result_t run() {
+    static TestLogging::test_result run() {
         lw_std::pair<int, lw_std::string> pair{0, "test"};
 
         if (pair.first != 0 || pair.second != "test") return {"initializer"};

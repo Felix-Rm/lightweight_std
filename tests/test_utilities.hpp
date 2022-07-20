@@ -90,10 +90,10 @@ class ContainerTester {
     typedef std::function<size_t(const test_container_t&)> size_getter_t;
     typedef std::function<ContainerValueType()> value_generator_t;
 
-    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&, const value_generator_t&)> neutral_modifier_t;
-    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&, const value_generator_t&)> grow_modifier_t;
-    typedef std::function<TestLogging::test_result_t(test_container_t&, verify_container_t&)> shrink_modifier_t;
-    typedef std::function<TestLogging::test_result_t(const test_container_t&, const verify_container_t&)> verifier_t;
+    typedef std::function<TestLogging::test_result(test_container_t&, verify_container_t&, const value_generator_t&)> neutral_modifier_t;
+    typedef std::function<TestLogging::test_result(test_container_t&, verify_container_t&, const value_generator_t&)> grow_modifier_t;
+    typedef std::function<TestLogging::test_result(test_container_t&, verify_container_t&)> shrink_modifier_t;
+    typedef std::function<TestLogging::test_result(const test_container_t&, const verify_container_t&)> verifier_t;
 
     typedef std::function<void(const test_container_t&)> tc_printer_t;
     typedef std::function<void(const verify_container_t&)> tv_printer_t;
@@ -134,7 +134,7 @@ class ContainerTester {
         m_tv_printer = printer;
     }
 
-    TestLogging::test_result_t run_operations(size_t num) {
+    TestLogging::test_result run_operations(size_t num) {
         if (!m_size_getter || !m_generator || !m_tc_printer || !m_tv_printer || m_grow_modifiers.empty() || m_shrink_modifiers.empty() || m_verifiers.empty()) {
             return {"one of the following is empty or unset: grow or shrink modifiers, validators, generator, size_getter, tc or tv printer "};
         }
@@ -145,7 +145,7 @@ class ContainerTester {
         TestLogging::test_printf("Random seed for container test is %ld", seed);
 
         for (size_t i = 0; i < num; ++i) {
-            TestLogging::test_result_t step_result;
+            TestLogging::test_result step_result;
             operation op = operation::GROW;
 
             size_t curent_size = m_size_getter(m_test_container);
@@ -233,199 +233,199 @@ class ContainerTester {
         default_printer_templated(vc);
     }
 
-    static TestLogging::test_result_t modify_by_copy(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_copy(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_copy_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t modify_by_move(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_move(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_move_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t modify_by_assign(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result modify_by_assign(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return modify_by_assign_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t modify_by_assign_range(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result modify_by_assign_range(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return modify_by_assign_range_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t modify_by_reserve(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_reserve(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_reserve_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t modify_by_resize(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_resize(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_resize_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t modify_by_resize_with_value(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result modify_by_resize_with_value(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return modify_by_resize_with_value_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t modify_by_swap(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_swap(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_swap_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t modify_by_shrink_to_fit(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
+    static TestLogging::test_result modify_by_shrink_to_fit(test_container_t& tc, verify_container_t& vc, const value_generator_t&) {
         return modify_by_shrink_to_fit_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t grow_by_push(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_push(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_push_back(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_push_back(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_back_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_push_back_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_push_back_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_back_rvalue_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_push_front(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_push_front(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_front_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_push_front_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_push_front_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_front_rvalue_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_emplace_back(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_emplace_back(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_emplace_back_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_emplace_front(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_emplace_front(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_emplace_front_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_emplace_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_emplace_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_emplace_no_pos_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_emplace(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_emplace(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_emplace_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t grow_by_insert_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_no_pos_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_insert(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t grow_by_insert_rvalue_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_rvalue_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_rvalue_no_pos_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_insert_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_rvalue_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t grow_by_insert_count(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_count(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_count_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t grow_by_insert_range_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_range_no_pos(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_range_no_pos_templated(tc, vc, gen);
     }
 
-    static TestLogging::test_result_t grow_by_insert_range(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+    static TestLogging::test_result grow_by_insert_range(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_insert_range_templated(tc, vc, gen, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_clear(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_clear(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_clear_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t shrink_by_pop(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_pop(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_pop_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t shrink_by_pop_back(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_pop_back(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_pop_back_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t shrink_by_pop_front(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_pop_front(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_pop_front_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_iterator_no_pos(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_iterator_no_pos(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_iterator_no_pos_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_iterator_for_map(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_iterator_for_map(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_iterator_for_map_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_iterator(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_iterator(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_iterator_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_value_for_map(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_value_for_map(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_value_for_map_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_value(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_value(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_value_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t shrink_by_erase_by_range(test_container_t& tc, verify_container_t& vc) {
+    static TestLogging::test_result shrink_by_erase_by_range(test_container_t& tc, verify_container_t& vc) {
         return shrink_by_erase_by_range_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_size(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_size(const test_container_t& tc, const verify_container_t& vc) {
         return verify_size_templated(tc, vc, default_size_getter, default_size_getter_templated<verify_container_t>);
     }
 
-    static TestLogging::test_result_t verify_front(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_front(const test_container_t& tc, const verify_container_t& vc) {
         return verify_front_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_back(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_back(const test_container_t& tc, const verify_container_t& vc) {
         return verify_back_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_element_position_with_at_for_map(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_position_with_at_for_map(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_position_with_at_for_map_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t verify_element_position_with_at(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_position_with_at(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_position_with_at_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_element_position_with_operator_brackets_for_map(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_position_with_operator_brackets_for_map(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_position_with_operator_brackets_for_map_templated(const_cast<test_container_t&>(tc), const_cast<verify_container_t&>(vc));
     }
 
-    static TestLogging::test_result_t verify_element_position_with_operator_brackets(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_position_with_operator_brackets(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_position_with_operator_brackets_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_element_position_with_iterator(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_position_with_iterator(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_position_with_iterator_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t verify_front_element_position(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_front_element_position(const test_container_t& tc, const verify_container_t& vc) {
         return verify_front_element_position_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_back_element_position(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_back_element_position(const test_container_t& tc, const verify_container_t& vc) {
         return verify_back_element_position_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_find_existing_element_for_map(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_find_existing_element_for_map(const test_container_t& tc, const verify_container_t& vc) {
         return verify_find_existing_element_for_map_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_find_existing_element(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_find_existing_element(const test_container_t& tc, const verify_container_t& vc) {
         return verify_find_existing_element_templated(tc, vc, default_size_getter);
     }
 
-    static TestLogging::test_result_t verify_element_inclusion_for_map(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_inclusion_for_map(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_inclusion_for_map_templated(tc, vc);
     }
 
-    static TestLogging::test_result_t verify_element_inclusion(const test_container_t& tc, const verify_container_t& vc) {
+    static TestLogging::test_result verify_element_inclusion(const test_container_t& tc, const verify_container_t& vc) {
         return verify_element_inclusion_templated(tc, vc);
     }
 
@@ -446,7 +446,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t modify_by_copy_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result modify_by_copy_templated(TestContainer_& tc, VerifyContainer_& vc) {
         auto tc_copy = TestContainer_{tc};
         auto vc_copy = VerifyContainer_{vc};
 
@@ -457,7 +457,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t modify_by_move_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result modify_by_move_templated(TestContainer_& tc, VerifyContainer_& vc) {
         auto tc_moved = TestContainer_{std::move(tc)};
         auto vc_moved = VerifyContainer_{std::move(vc)};
 
@@ -468,7 +468,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t modify_by_assign_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result modify_by_assign_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto size = size_getter(tc);
         auto value = gen();
 
@@ -479,7 +479,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t modify_by_assign_range_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result modify_by_assign_range_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto size = size_getter(tc);
         std::vector<typename TestContainer_::value_type> range;
 
@@ -493,7 +493,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t modify_by_reserve_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result modify_by_reserve_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto new_size = random_new_size(tc, size_getter, 10, 10);
 
         tc.reserve(new_size);
@@ -503,7 +503,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t modify_by_resize_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result modify_by_resize_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto new_size = random_new_size(tc, size_getter, 10, 10);
 
         tc.resize(new_size);
@@ -513,7 +513,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t modify_by_resize_with_value_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result modify_by_resize_with_value_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
         auto new_size = random_new_size(tc, size_getter, 10, 10);
 
@@ -524,7 +524,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t modify_by_swap_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result modify_by_swap_templated(TestContainer_& tc, VerifyContainer_& vc) {
         auto tc_copy = TestContainer_{tc};
         auto vc_copy = VerifyContainer_{vc};
 
@@ -535,7 +535,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t modify_by_shrink_to_fit_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result modify_by_shrink_to_fit_templated(TestContainer_& tc, VerifyContainer_& vc) {
         tc.shrink_to_fit();
         vc.shrink_to_fit();
 
@@ -543,7 +543,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_push_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_push_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         tc.push(value);
         vc.push(value);
@@ -552,7 +552,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_push_back_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_push_back_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         tc.push_back(value);
         vc.push_back(value);
@@ -561,7 +561,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_push_back_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_push_back_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         auto value_copy = value;
         auto value_copy2 = value;
@@ -573,7 +573,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_push_front_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_push_front_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         tc.push_front(value);
         vc.push_front(value);
@@ -582,7 +582,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_push_front_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_push_front_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         auto value_copy = value;
         auto value_copy2 = value;
@@ -594,7 +594,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_emplace_back_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_emplace_back_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
 
         return return_result_check(tc, vc,
@@ -604,7 +604,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_emplace_front_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_emplace_front_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
 
         return return_result_check(tc, vc,
@@ -614,7 +614,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_emplace_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_emplace_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
 
         tc.emplace(value);
@@ -623,7 +623,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t grow_by_emplace_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result grow_by_emplace_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
         auto idx = random_index(tc, size_getter);
 
@@ -634,7 +634,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_insert_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_insert_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
 
         tc.insert(value);
@@ -643,7 +643,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t grow_by_insert_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result grow_by_insert_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
         auto idx = random_index(tc, size_getter);
 
@@ -657,7 +657,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_insert_rvalue_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_insert_rvalue_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         auto value = gen();
         auto value_copy = value;
         auto value_copy2 = value;
@@ -668,7 +668,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t grow_by_insert_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result grow_by_insert_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
         auto value_copy = value;
         auto value_copy2 = value;
@@ -681,7 +681,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t grow_by_insert_count_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result grow_by_insert_count_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
         size_t count = urand() % 10;
         auto idx = random_index(tc, size_getter);
@@ -693,7 +693,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
-    static TestLogging::test_result_t grow_by_insert_range_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+    static TestLogging::test_result grow_by_insert_range_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
         size_t size = urand() % 10;
         std::vector<typename TestContainer_::value_type> range;
 
@@ -706,7 +706,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t grow_by_insert_range_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result grow_by_insert_range_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         size_t size = urand() % 10;
         std::vector<typename TestContainer_::value_type> range;
 
@@ -722,7 +722,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t shrink_by_clear_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result shrink_by_clear_templated(TestContainer_& tc, VerifyContainer_& vc) {
         tc.clear();
         vc.clear();
 
@@ -730,7 +730,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t shrink_by_pop_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result shrink_by_pop_templated(TestContainer_& tc, VerifyContainer_& vc) {
         tc.pop();
         vc.pop();
 
@@ -738,7 +738,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t shrink_by_pop_back_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result shrink_by_pop_back_templated(TestContainer_& tc, VerifyContainer_& vc) {
         tc.pop_back();
         vc.pop_back();
 
@@ -746,7 +746,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t shrink_by_pop_front_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result shrink_by_pop_front_templated(TestContainer_& tc, VerifyContainer_& vc) {
         tc.pop_front();
         vc.pop_front();
 
@@ -754,7 +754,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_iterator_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_iterator_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx = random_index(tc, size_getter);
 
         auto tc_it = advance_copy(tc.begin(), idx);
@@ -769,7 +769,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_iterator_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_iterator_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx = random_index(tc, size_getter);
 
         auto tc_it = advance_copy(tc.begin(), idx);
@@ -784,7 +784,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_iterator_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_iterator_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
@@ -794,7 +794,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_value_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_value_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx = random_index(tc, size_getter);
         auto value = *advance_copy(tc.begin(), idx);
 
@@ -805,7 +805,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_value_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_value_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx = random_index(tc, size_getter);
         auto value = *advance_copy(tc.begin(), idx);
 
@@ -816,7 +816,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t shrink_by_erase_by_range_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
+    static TestLogging::test_result shrink_by_erase_by_range_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
         auto idx1 = random_index(tc, size_getter);
         auto idx2 = random_index(tc, size_getter);
 
@@ -830,7 +830,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter, typename VerifyContainerSizeGetter>
-    static TestLogging::test_result_t verify_size_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter, const VerifyContainerSizeGetter& vc_size_getter) {
+    static TestLogging::test_result verify_size_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter, const VerifyContainerSizeGetter& vc_size_getter) {
         if (tc_size_getter(tc) != vc_size_getter(vc))
             return {"sizes don't match: TestContainer: " + to_string(tc_size_getter(tc)) + " VerifyContainer: " + to_string(vc_size_getter(vc))};
 
@@ -838,7 +838,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_front_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_front_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
         if (tc.front() != vc.front())
             return {"fronts don't match: TestContainer: " + to_string(tc.front()) + " VerifyContainer: " + to_string(vc.front())};
@@ -847,7 +847,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_back_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_back_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
         if (tc.back() != vc.back())
             return {"backs don't match: TestContainer: " + to_string(tc.back()) + " VerifyContainer: " + to_string(vc.back())};
@@ -856,7 +856,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t verify_element_position_with_at_for_map_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
+    static TestLogging::test_result verify_element_position_with_at_for_map_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
         for (auto& elt : vc)
             if (tc.at(elt.first) != vc.at(elt.first))
                 return {"values don't match at idx " + to_string(elt.first) + " TestContainer: " + to_string(tc.at(elt.first)) + " VerifyContainer: " + to_string(vc.at(elt.first))};
@@ -865,7 +865,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_element_position_with_at_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_element_position_with_at_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         for (size_t idx = 0; idx < tc_size_getter(tc); ++idx)
             if (tc.at(idx) != vc.at(idx))
                 return {"values don't match at idx " + to_string(idx) + " TestContainer: " + to_string(tc.at(idx)) + " VerifyContainer: " + to_string(vc.at(idx))};
@@ -874,7 +874,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t verify_element_position_with_operator_brackets_for_map_templated(TestContainer_& tc, VerifyContainer_& vc) {
+    static TestLogging::test_result verify_element_position_with_operator_brackets_for_map_templated(TestContainer_& tc, VerifyContainer_& vc) {
         for (auto& elt : vc)
             if (tc[elt.first] != vc[elt.first])
                 return {"values don't match at idx " + to_string(elt.first) + " TestContainer: " + to_string(tc[elt.first]) + " VerifyContainer: " + to_string(vc[elt.first])};
@@ -883,7 +883,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_element_position_with_operator_brackets_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_element_position_with_operator_brackets_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         for (size_t idx = 0; idx < tc_size_getter(tc); ++idx)
             if (tc[idx] != vc[idx])
                 return {"values don't match at idx " + to_string(idx) + " TestContainer: " + to_string(tc[idx]) + " VerifyContainer: " + to_string(vc[idx])};
@@ -892,7 +892,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t verify_element_position_with_iterator_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
+    static TestLogging::test_result verify_element_position_with_iterator_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
         auto tc_it = tc.begin();
         auto vc_it = vc.begin();
         size_t pos = 0;
@@ -917,7 +917,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_front_element_position_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter&) {
+    static TestLogging::test_result verify_front_element_position_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter&) {
         if (tc.front() != vc.front())
             return {"front values don't match TestContainer: " + to_string(tc.front()) + " VerifyContainer: " + to_string(vc.front())};
 
@@ -925,7 +925,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_back_element_position_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter&) {
+    static TestLogging::test_result verify_back_element_position_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter&) {
         if (tc.back() != vc.back())
             return {"back values don't match TestContainer: " + to_string(tc.back()) + " VerifyContainer: " + to_string(vc.back())};
 
@@ -933,7 +933,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_find_existing_element_for_map_templated(const TestContainer_& tc, const VerifyContainer_&, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_find_existing_element_for_map_templated(const TestContainer_& tc, const VerifyContainer_&, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
 
         auto idx = random_index(tc, tc_size_getter);
@@ -952,7 +952,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-    static TestLogging::test_result_t verify_find_existing_element_templated(const TestContainer_& tc, const VerifyContainer_&, const TestContainerSizeGetter& tc_size_getter) {
+    static TestLogging::test_result verify_find_existing_element_templated(const TestContainer_& tc, const VerifyContainer_&, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
 
         auto idx = random_index(tc, tc_size_getter);
@@ -971,7 +971,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t verify_element_inclusion_for_map_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
+    static TestLogging::test_result verify_element_inclusion_for_map_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
         for (const auto& elt : tc) {
             auto res = vc.find(elt.first);
             if (res == vc.end())
@@ -992,7 +992,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t verify_element_inclusion_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
+    static TestLogging::test_result verify_element_inclusion_templated(const TestContainer_& tc, const VerifyContainer_& vc) {
         for (auto& elt : tc) {
             if (vc.find(elt) == vc.end())
                 return {"element " + to_string(elt) + " exists in TestContainer, but not in VerifyContainer"};
@@ -1028,7 +1028,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const typename TestContainer_::const_iterator& tc_it, const typename VerifyContainer_::const_iterator& vc_it, const std::string& op_name) {
+    static TestLogging::test_result return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const typename TestContainer_::const_iterator& tc_it, const typename VerifyContainer_::const_iterator& vc_it, const std::string& op_name) {
         size_t tc_count = 0, vc_count = 0;
         auto tc_cursor = tc.cbegin();
         auto vc_cursor = vc.cbegin(); 
@@ -1052,7 +1052,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t return_result_check(const TestContainer_&, const VerifyContainer_&, typename TestContainer_::const_reference tc_val, typename VerifyContainer_::const_reference vc_val, const std::string& op_name) {
+    static TestLogging::test_result return_result_check(const TestContainer_&, const VerifyContainer_&, typename TestContainer_::const_reference tc_val, typename VerifyContainer_::const_reference vc_val, const std::string& op_name) {
         if (tc_val == vc_val)
             return {op_name, true};
 
@@ -1060,7 +1060,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_>
-    static TestLogging::test_result_t return_result_check(const TestContainer_&, const VerifyContainer_&, typename TestContainer_::size_type tc_val, typename VerifyContainer_::size_type vc_val, const std::string& op_name) {
+    static TestLogging::test_result return_result_check(const TestContainer_&, const VerifyContainer_&, typename TestContainer_::size_type tc_val, typename VerifyContainer_::size_type vc_val, const std::string& op_name) {
         if (tc_val == vc_val)
             return {op_name, true};
 
@@ -1068,7 +1068,7 @@ class ContainerTester {
     }
 
     template <typename TestContainer_, typename VerifyContainer_, template <typename, typename> class tc_pair_t, template <typename, typename> class vc_pair_t>
-    static TestLogging::test_result_t return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const tc_pair_t<typename TestContainer_::const_iterator, bool>& tc_res, const vc_pair_t<typename VerifyContainer_::const_iterator, bool>& vc_res, const std::string& op_name) {
+    static TestLogging::test_result return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const tc_pair_t<typename TestContainer_::const_iterator, bool>& tc_res, const vc_pair_t<typename VerifyContainer_::const_iterator, bool>& vc_res, const std::string& op_name) {
         if (tc_res.second != vc_res.second) return {"Return value mismatch [pair<Iterator,bool>] on bool: tc: " + to_string(tc_res.second) + " vc: " + to_string(vc_res.second) + " on operation: " + op_name};
         if (tc_res.first != tc.cend() && vc_res.first != vc.cend() && *tc_res.first != *vc_res.first) return {"Return value mismatch [pair<Iterator,bool>] on iterator value: tc: " + to_string(tc_res.second) + " vc: " + to_string(vc_res.second) + " on operation: " + op_name};
 
@@ -1157,7 +1157,7 @@ class ContainerTester {
 template <typename Derived, template <typename...> class test_container_t, template <typename...> class verify_container_t>
 class ContainerTestDefaultMixin {
    public:
-    static TestLogging::test_result_t run_with_int(size_t operation_count) {
+    static TestLogging::test_result run_with_int(size_t operation_count) {
         typedef ContainerTester<test_container_t<int>, verify_container_t<int>> tester_t;
         tester_t tester;
 
@@ -1166,7 +1166,7 @@ class ContainerTestDefaultMixin {
         return Derived::run_templated(tester, operation_count);
     }
 
-    static TestLogging::test_result_t run_with_non_trivial(size_t operation_count) {
+    static TestLogging::test_result run_with_non_trivial(size_t operation_count) {
         typedef ContainerTester<test_container_t<NonTrivial>, verify_container_t<NonTrivial>> tester_t;
         tester_t tester;
 
@@ -1175,7 +1175,7 @@ class ContainerTestDefaultMixin {
         return Derived::run_templated(tester, operation_count);
     }
 
-    static TestLogging::test_result_t run_with_int_int(size_t operation_count) {
+    static TestLogging::test_result run_with_int_int(size_t operation_count) {
         typedef ContainerTester<test_container_t<int, int>, verify_container_t<int, int>> tester_t;
         tester_t tester;
 
@@ -1186,7 +1186,7 @@ class ContainerTestDefaultMixin {
         return Derived::run_templated(tester, operation_count);
     }
 
-    static TestLogging::test_result_t run_with_int_non_trivial(size_t operation_count) {
+    static TestLogging::test_result run_with_int_non_trivial(size_t operation_count) {
         typedef ContainerTester<test_container_t<int, NonTrivial>, verify_container_t<int, NonTrivial>> tester_t;
         tester_t tester;
 

@@ -11,7 +11,7 @@ class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, 
 
    private:
     template <typename ContainerTestType>
-    static TestLogging::test_result_t run_templated(ContainerTestType& tester, size_t operation_count) {
+    static TestLogging::test_result run_templated(ContainerTestType& tester, size_t operation_count) {
         tester.set_size_getter(ContainerTestType::default_size_getter);
 
         tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
