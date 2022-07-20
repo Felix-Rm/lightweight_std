@@ -10,11 +10,6 @@
 Lightweight_std is a library which provides some features of the c++ standard library. It is meant for use on embedded systems like microcontrollers, where the standard library is to memory intensive or just not available.
 
 The current version includes implementations for:
-- \<utility> (in "utility.hpp")
-    - `std::swap`
-    - `std::move`
-    - `std::pair`
-    - `std::make_pair`
 - \<algorithm> (in "algorithm.hpp")
     - synthesized comparison operators (all comparison operators expressed in terms of less than)
     - `std::find`
@@ -28,19 +23,41 @@ The current version includes implementations for:
     - `std::min` (also available as `min_of` for Arduino environments)
     - `std::equal`
     - `std::lexicographical_compare`
+
+- \<functional> (in "functional.hpp")
+    - `std::equal_to`
+    - `std::hash` (with specialization for integral types and `lw_std::string`)
+
 - \<limits> (in "limits.hpp")
-    - `std::limits` (for `uint8_t` and `uint16_t`)
-- \<memory> (in "unique_ptr.hpp")
-    - `std::unique_ptr`
-- \<string> (in "string.hpp")
-    - `std::string` (passthrough of `std::string` or Arduino's String)
-- \<vector> (in "vector.hpp")
-    - `std::vector` (all members except `data` and those requiring `allocator`, `initializer_list`, or `reverse_iterator`)
+    - `std::limits` (just `::max` and `::min`) (with specialization  for `uint8_t`, `uint16_t`, `uint32_t` and `uint64_t`)
+
 - \<list> (in "list.hpp")
-    - `std::list` (no complete interface)
+    - `std::list` (non-complete API)
+
+- \<memory> (in "memory.hpp")
+    - `std::allocator`
+    - `std::unique_ptr` (non-complete API)
+
 - \<queue> (in "queue.hpp")
-    - `std::queue` (with `list` as underlying container)
+    - `std::queue` (with `list` as default underlying container) (non-complete API)
+
+- \<string> (in "string.hpp")
+    - `std::string` (passthrough of `std::string` or Arduino's `String`)
+
 - \<unordered_set> (in "unordered_set.hpp")
-    - `std::unordered_set` (with `list` as underlying container -> **bad time-complexity on any operation requiring lookup**)
+    - `std::unordered_set` (non-complete API)
+
 - \<unordered_map> (in "unordered_map.hpp")
-    - `std::unordered_map` (with `list` as underlying container -> **bad time-complexity on any operation requiring lookup**)
+    - `std::unordered_map` (non-complete API)
+
+- \<utility> (in "utility.hpp")
+    - `std::move`
+    - `std::forward`
+    - `std::swap`
+    - `std::pair` (with compatibility constructor and comparison operators for `std::pair`, enable by defining LWSTD_BUILD_STD_COMPATIBILITY)
+    - `std::make_pair`
+
+- \<vector> (in "vector.hpp")
+    - `std::vector` (non-complete API)
+
+
