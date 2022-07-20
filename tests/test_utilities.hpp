@@ -178,9 +178,9 @@ class ContainerTester {
                 step_result = it->second(m_test_container, m_verify_container);
             }
 
-            TestLogging::test_printf("%s", step_result.message.c_str());
-            m_tc_printer(m_test_container);
-            TestLogging::test_printf("");
+            // TestLogging::test_printf("%s", step_result.message.c_str());
+            // m_tc_printer(m_test_container);
+            // TestLogging::test_printf("");
 
             if (step_result.passed) {
                 auto last_mod_description = step_result.message;
@@ -207,19 +207,23 @@ class ContainerTester {
 
     static size_t default_size_getter(const test_container_t& c) {
         return default_size_getter_templated(c);
-    };
+    }
+
+    static constexpr unsigned int urand() {
+        return static_cast<unsigned>(rand());
+    }
 
     static unsigned int default_uint_generator() {
-        return rand() % 100;
-    };
+        return urand() % 100;
+    }
 
     static double default_double_generator() {
-        return (rand() % 10000) / 100.0;
-    };
+        return (urand() % 10000) / 100.0;
+    }
 
     static NonTrivial default_non_trivial_generator() {
         return {default_uint_generator()};
-    };
+    }
 
     static void default_test_container_printer(const test_container_t& tc) {
         default_printer_templated(tc);
@@ -279,6 +283,10 @@ class ContainerTester {
 
     static TestLogging::test_result_t grow_by_push_front(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
         return grow_by_push_front_templated(tc, vc, gen);
+    }
+
+    static TestLogging::test_result_t grow_by_push_front_rvalue(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
+        return grow_by_push_front_rvalue_templated(tc, vc, gen);
     }
 
     static TestLogging::test_result_t grow_by_emplace_back(test_container_t& tc, verify_container_t& vc, const value_generator_t& gen) {
@@ -486,10 +494,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t modify_by_reserve_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        auto size = size_getter(tc);
-        int delta = (rand() % 20) - std::min(5ul, size);
-
-        auto new_size = size + delta;
+        auto new_size = random_new_size(tc, size_getter, 10, 10);
 
         tc.reserve(new_size);
         vc.reserve(new_size);
@@ -499,10 +504,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t modify_by_resize_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        auto size = size_getter(tc);
-        int delta = (rand() % 20) - std::min(5ul, size);
-
-        auto new_size = size + delta;
+        auto new_size = random_new_size(tc, size_getter, 10, 10);
 
         tc.resize(new_size);
         vc.resize(new_size);
@@ -512,11 +514,8 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
     static TestLogging::test_result_t modify_by_resize_with_value_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
-        auto size = size_getter(tc);
-        int delta = (rand() % 20) - std::min(5ul, size);
         auto value = gen();
-
-        auto new_size = size + delta;
+        auto new_size = random_new_size(tc, size_getter, 10, 10);
 
         tc.resize(new_size, value);
         vc.resize(new_size, value);
@@ -580,7 +579,19 @@ class ContainerTester {
         vc.push_front(value);
 
         return {"push_front value " + to_string(value), true};
-    };
+    }
+
+    template <typename TestContainer_, typename VerifyContainer_, typename Generator>
+    static TestLogging::test_result_t grow_by_push_front_rvalue_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
+        auto value = gen();
+        auto value_copy = value;
+        auto value_copy2 = value;
+
+        tc.push_front(std::move(value));
+        vc.push_front(std::move(value_copy));
+
+        return {"push_front rvalue " + to_string(value_copy2), true};
+    }
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
     static TestLogging::test_result_t grow_by_emplace_back_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
@@ -614,7 +625,7 @@ class ContainerTester {
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
     static TestLogging::test_result_t grow_by_emplace_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
                                    tc.emplace(advance_copy(tc.begin(), idx), value),
@@ -634,7 +645,7 @@ class ContainerTester {
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
     static TestLogging::test_result_t grow_by_insert_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         tc.insert(advance_copy(tc.begin(), idx), value);
         vc.insert(advance_copy(vc.begin(), idx), value);
@@ -661,7 +672,7 @@ class ContainerTester {
         auto value = gen();
         auto value_copy = value;
         auto value_copy2 = value;
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
                                    tc.insert(advance_copy(tc.begin(), idx), std::move(value)),
@@ -672,8 +683,8 @@ class ContainerTester {
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
     static TestLogging::test_result_t grow_by_insert_count_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
         auto value = gen();
-        size_t count = rand() % 10;
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        size_t count = urand() % 10;
+        auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
                                    tc.insert(advance_copy(tc.begin(), idx), count, value),
@@ -683,7 +694,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator>
     static TestLogging::test_result_t grow_by_insert_range_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen) {
-        size_t size = rand() % 10;
+        size_t size = urand() % 10;
         std::vector<typename TestContainer_::value_type> range;
 
         for (size_t i = 0; i < size; ++i)
@@ -696,13 +707,13 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename Generator, typename TestContainerSizeGetter>
     static TestLogging::test_result_t grow_by_insert_range_templated(TestContainer_& tc, VerifyContainer_& vc, const Generator& gen, const TestContainerSizeGetter& size_getter) {
-        size_t size = rand() % 10;
+        size_t size = urand() % 10;
         std::vector<typename TestContainer_::value_type> range;
 
         for (size_t i = 0; i < size; ++i)
             range.push_back(gen());
 
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
                                    tc.insert(advance_copy(tc.begin(), idx), range.begin(), range.end()),
@@ -744,7 +755,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_iterator_no_pos_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         auto tc_it = advance_copy(tc.begin(), idx);
 
@@ -759,7 +770,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_iterator_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         auto tc_it = advance_copy(tc.begin(), idx);
 
@@ -774,7 +785,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_iterator_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
 
         return return_result_check(tc, vc,
                                    tc.erase(advance_copy(tc.begin(), idx)),
@@ -784,7 +795,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_value_for_map_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
         auto value = *advance_copy(tc.begin(), idx);
 
         return return_result_check(tc, vc,
@@ -795,7 +806,7 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_value_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx = random_index(tc, size_getter);
         auto value = *advance_copy(tc.begin(), idx);
 
         return return_result_check(tc, vc,
@@ -806,11 +817,11 @@ class ContainerTester {
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t shrink_by_erase_by_range_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& size_getter) {
-        int idx1 = size_getter(tc) ? rand() % size_getter(tc) : 0;
-        int idx2 = size_getter(tc) ? rand() % size_getter(tc) : 0;
+        auto idx1 = random_index(tc, size_getter);
+        auto idx2 = random_index(tc, size_getter);
 
-        int min = std::min(idx1, idx2);
-        int max = std::max(idx1, idx2);
+        auto min = std::min(idx1, idx2);
+        auto max = std::max(idx1, idx2);
 
         return return_result_check(tc, vc,
                                    tc.erase(advance_copy(tc.begin(), min), advance_copy(tc.begin(), max)),
@@ -886,16 +897,24 @@ class ContainerTester {
         auto vc_it = vc.begin();
         size_t pos = 0;
 
-        while (tc_it != tc.end()) {
+        while (true) {
+            auto tc_is_end = tc_it == tc.end();
+            auto vc_is_end = vc_it == vc.end();
+
+            if (tc_is_end and vc_is_end)
+                return {};
+
+            if (tc_is_end != vc_is_end)
+                return {"one iterator indicated end before the other"};
+
             if (*tc_it != *vc_it)
                 return {"values don't match at position " + to_string(pos) + " TestContainer: " + to_string(*tc_it) + " VerifyContainer: " + to_string(*vc_it)};
+
             tc_it++;
             vc_it++;
             pos++;
         }
-
-        return {};
-    };
+    }
 
     template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
     static TestLogging::test_result_t verify_front_element_position_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
@@ -917,7 +936,7 @@ class ContainerTester {
     static TestLogging::test_result_t verify_find_existing_element_for_map_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
 
-        int idx = rand() % tc_size_getter(tc);
+        auto idx = random_index(tc, tc_size_getter);
 
         auto find_value = *advance_copy(tc.begin(), idx);
         auto res = tc.find(find_value.first);
@@ -936,9 +955,9 @@ class ContainerTester {
     static TestLogging::test_result_t verify_find_existing_element_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
         if (tc_size_getter(tc) == 0) return {};
 
-        int idx = rand() % tc_size_getter(tc);
+        auto idx = random_index(tc, tc_size_getter);
 
-        auto find_value = *(tc.begin() + idx);
+        auto find_value = *advance_copy(tc.begin(), idx);
         auto res = find(tc.begin(), tc.end(), find_value);
 
         if (res == tc.end())
@@ -962,8 +981,8 @@ class ContainerTester {
         }
 
         for (auto& elt : vc) {
-            auto res = vc.find(elt.first);
-            if (res == vc.end())
+            auto res = tc.find(elt.first);
+            if (res == tc.end())
                 return {"element " + to_string(elt) + " exists in VerifyContainer, but not in TestContainer"};
             if (*res != elt)
                 return {"element " + to_string(elt) + " has deviating value in TestContainer " + to_string(*res)};
@@ -996,10 +1015,24 @@ class ContainerTester {
     }
 
    private:
+    template <typename Container, typename SizeGetter>
+    static constexpr size_t random_index(const Container& c, const SizeGetter& s) {
+        size_t size = s(c);
+        return size ? urand() % size : 0;
+    }
+
+    template <typename Container, typename SizeGetter>
+    static constexpr size_t random_new_size(const Container& c, const SizeGetter& s, size_t max_minus, size_t max_plus) {
+        size_t size = s(c);
+        return size + (urand() % (max_minus + max_plus)) - std::min(max_minus, size);
+    }
+
     template <typename TestContainer_, typename VerifyContainer_>
     static TestLogging::test_result_t return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const typename TestContainer_::const_iterator& tc_it, const typename VerifyContainer_::const_iterator& vc_it, const std::string& op_name) {
         size_t tc_count = 0, vc_count = 0;
-        for (auto tc_cursor = tc.cbegin(), vc_cursor = vc.cbegin(); tc_cursor != tc.cend() && vc_cursor != vc.cend();) {
+        auto tc_cursor = tc.cbegin();
+        auto vc_cursor = vc.cbegin(); 
+        for (;tc_cursor != tc.cend() && vc_cursor != vc.cend();) {
             bool tc_match = tc_cursor == tc_it;
             bool vc_match = vc_cursor == vc_it;
 
@@ -1052,7 +1085,7 @@ class ContainerTester {
 
     template <typename Container>
     static auto random_choice(const Container& from) {
-        size_t idx = rand() % from.size();
+        size_t idx = urand() % from.size();
         auto it = from.begin();
         std::advance(it, idx);
         return it;
