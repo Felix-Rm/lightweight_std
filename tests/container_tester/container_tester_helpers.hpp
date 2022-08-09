@@ -521,7 +521,7 @@ TestLogging::test_result shrink_by_erase_by_range_templated(TestContainer_& tc, 
 }
 
 template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter, typename VerifyContainerSizeGetter>
-TestLogging::test_result verify_size_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter, const VerifyContainerSizeGetter& vc_size_getter) {
+TestLogging::test_result verify_size_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter, const VerifyContainerSizeGetter& vc_size_getter) {
     if (tc_size_getter(tc) != vc_size_getter(vc))
         return {"sizes don't match: TestContainer: " + to_string(tc_size_getter(tc)) + " VerifyContainer: " + to_string(vc_size_getter(vc))};
 
@@ -529,7 +529,7 @@ TestLogging::test_result verify_size_templated(TestContainer_& tc, VerifyContain
 }
 
 template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-TestLogging::test_result verify_front_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+TestLogging::test_result verify_front_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
     if (tc_size_getter(tc) == 0) return {};
     if (tc.front() != vc.front())
         return {"fronts don't match: TestContainer: " + to_string(tc.front()) + " VerifyContainer: " + to_string(vc.front())};
@@ -538,7 +538,7 @@ TestLogging::test_result verify_front_templated(TestContainer_& tc, VerifyContai
 }
 
 template <typename TestContainer_, typename VerifyContainer_, typename TestContainerSizeGetter>
-TestLogging::test_result verify_back_templated(TestContainer_& tc, VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
+TestLogging::test_result verify_back_templated(const TestContainer_& tc, const VerifyContainer_& vc, const TestContainerSizeGetter& tc_size_getter) {
     if (tc_size_getter(tc) == 0) return {};
     if (tc.back() != vc.back())
         return {"backs don't match: TestContainer: " + to_string(tc.back()) + " VerifyContainer: " + to_string(vc.back())};

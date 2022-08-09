@@ -11,7 +11,8 @@ class TestLwList : public ContainerTestDefaultMixin<TestLwList, lw_std::list, st
    private:
     template <typename ContainerTestType>
     static TestLogging::test_result run_templated(ContainerTestType& tester, size_t operation_count) {
-        tester.set_size_getter(ContainerTestType::default_size_getter);
+        tester.set_test_container_size_getter(ContainerTestType::default_test_container_size_getter);
+        tester.set_verify_container_size_getter(ContainerTestType::default_verify_container_size_getter);
 
         tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
         tester.set_verify_container_printer(ContainerTestType::default_verify_container_printer);

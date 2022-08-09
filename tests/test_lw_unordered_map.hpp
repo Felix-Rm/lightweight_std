@@ -3,7 +3,6 @@
 #include <unordered_map>
 
 #include "container_test_mixin.hpp"
-#include "ftest/test_logging.hpp"
 #include "unordered_map.hpp"
 
 class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, lw_std::unordered_map, std::unordered_map> {
@@ -12,7 +11,8 @@ class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, 
    private:
     template <typename ContainerTestType>
     static TestLogging::test_result run_templated(ContainerTestType& tester, size_t operation_count) {
-        tester.set_size_getter(ContainerTestType::default_size_getter);
+        tester.set_test_container_size_getter(ContainerTestType::default_test_container_size_getter);
+        tester.set_verify_container_size_getter(ContainerTestType::default_verify_container_size_getter);
 
         tester.set_test_container_printer(ContainerTestType::default_test_container_printer);
         tester.set_verify_container_printer(ContainerTestType::default_verify_container_printer);

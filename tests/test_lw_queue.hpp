@@ -15,7 +15,8 @@ class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue,
 
     template <typename ContainerTestType>
     static TestLogging::test_result run_templated(ContainerTestType& tester, size_t operation_count) {
-        tester.set_size_getter(ContainerTestType::default_size_getter);
+        tester.set_test_container_size_getter(ContainerTestType::default_test_container_size_getter);
+        tester.set_verify_container_size_getter(ContainerTestType::default_verify_container_size_getter);
 
         tester.set_test_container_printer(printer<typename ContainerTestType::test_container_t>);
         tester.set_verify_container_printer(printer<typename ContainerTestType::verify_container_t>);
