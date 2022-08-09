@@ -2,9 +2,8 @@
 
 #include <queue>
 
-#include "ftest/test_logging.hpp"
+#include "container_test_mixin.hpp"
 #include "queue.hpp"
-#include "test_utilities.hpp"
 
 class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue, std::queue> {
     friend ContainerTestDefaultMixin;

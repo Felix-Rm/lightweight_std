@@ -1,6 +1,7 @@
 #pragma once
 
-#include "ftest/test_logging.hpp"
+#include <ftest/test_logging.hpp>
+
 #include "string.hpp"
 #include "utility.hpp"
 

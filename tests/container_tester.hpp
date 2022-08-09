@@ -5,81 +5,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#include <ftest/test_logging.hpp>
 #include <functional>
 #include <string>
 #include <unordered_map>
 
-#include "ftest/test_logging.hpp"
 #include "impl/pair.hpp"
-
-/*
-    This is a non default-constructable object with heap allocations to check if destructor is called aproproately
-*/
-
-class NonTrivial {
-   public:
-    NonTrivial() {
-        m_data = new unsigned{-1u};
-    }
-
-    NonTrivial(unsigned a) {
-        m_data = new unsigned{a};
-    }
-
-    // NonTrivial(const NonTrivial&) = delete;
-    NonTrivial(const NonTrivial& other) {
-        operator=(other);
-    }
-
-    NonTrivial(NonTrivial&& other) {
-        operator=(std::move(other));
-    }
-
-    ~NonTrivial() {
-        clear();
-    }
-
-    NonTrivial& operator=(const NonTrivial& other) {
-        if (this != &other) {
-            clear();
-            if (other.m_data)
-                m_data = new unsigned{*other.m_data};
-        }
-        return *this;
-    }
-
-    NonTrivial& operator=(NonTrivial&& other) {
-        if (this != &other) {
-            clear();
-            m_data = other.m_data;
-            other.m_data = nullptr;
-        }
-        return *this;
-    }
-
-    bool operator==(const NonTrivial& rhs) const {
-        if (m_data == nullptr || rhs.m_data == nullptr) return false;
-        return *m_data == *rhs.m_data;
-    }
-
-    bool operator!=(const NonTrivial& rhs) const {
-        return !operator==(rhs);
-    }
-
-    unsigned data() const {
-        return *m_data;
-    }
-
-    void clear() {
-        if (m_data) {
-            delete m_data;
-            m_data = nullptr;
-        }
-    }
-
-   private:
-    unsigned* m_data{nullptr};
-};
+#include "non_trivial.hpp"
 
 template <typename TestContainer, typename VerifyContainer, typename ContainerValueType = typename VerifyContainer::value_type>
 class ContainerTester {
@@ -100,6 +32,7 @@ class ContainerTester {
 
     void set_median_size(size_t size) {
         m_median_size = size;
+        // (void)size;
     }
 
     void add_neutral_modifier(std::string name, const neutral_modifier_t& mod) {
@@ -1031,8 +964,8 @@ class ContainerTester {
     static TestLogging::test_result return_result_check(const TestContainer_& tc, const VerifyContainer_& vc, const typename TestContainer_::const_iterator& tc_it, const typename VerifyContainer_::const_iterator& vc_it, const std::string& op_name) {
         size_t tc_count = 0, vc_count = 0;
         auto tc_cursor = tc.cbegin();
-        auto vc_cursor = vc.cbegin(); 
-        for (;tc_cursor != tc.cend() && vc_cursor != vc.cend();) {
+        auto vc_cursor = vc.cbegin();
+        for (; tc_cursor != tc.cend() && vc_cursor != vc.cend();) {
             bool tc_match = tc_cursor == tc_it;
             bool vc_match = vc_cursor == vc_it;
 
@@ -1152,48 +1085,4 @@ class ContainerTester {
 
     tc_printer_t m_tc_printer;
     tv_printer_t m_tv_printer;
-};
-
-template <typename Derived, template <typename...> class test_container_t, template <typename...> class verify_container_t>
-class ContainerTestDefaultMixin {
-   public:
-    static TestLogging::test_result run_with_int(size_t operation_count) {
-        typedef ContainerTester<test_container_t<int>, verify_container_t<int>> tester_t;
-        tester_t tester;
-
-        tester.set_value_generator(tester_t::default_uint_generator);
-
-        return Derived::run_templated(tester, operation_count);
-    }
-
-    static TestLogging::test_result run_with_non_trivial(size_t operation_count) {
-        typedef ContainerTester<test_container_t<NonTrivial>, verify_container_t<NonTrivial>> tester_t;
-        tester_t tester;
-
-        tester.set_value_generator(tester_t::default_non_trivial_generator);
-
-        return Derived::run_templated(tester, operation_count);
-    }
-
-    static TestLogging::test_result run_with_int_int(size_t operation_count) {
-        typedef ContainerTester<test_container_t<int, int>, verify_container_t<int, int>> tester_t;
-        tester_t tester;
-
-        tester.set_value_generator([]() -> std::pair<const int, int> {
-            return {tester_t::default_uint_generator(), tester_t::default_uint_generator()};
-        });
-
-        return Derived::run_templated(tester, operation_count);
-    }
-
-    static TestLogging::test_result run_with_int_non_trivial(size_t operation_count) {
-        typedef ContainerTester<test_container_t<int, NonTrivial>, verify_container_t<int, NonTrivial>> tester_t;
-        tester_t tester;
-
-        tester.set_value_generator([]() -> std::pair<const int, NonTrivial> {
-            return {tester_t::default_uint_generator(), tester_t::default_non_trivial_generator()};
-        });
-
-        return Derived::run_templated(tester, operation_count);
-    }
 };

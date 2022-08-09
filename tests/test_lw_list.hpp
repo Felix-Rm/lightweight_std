@@ -2,9 +2,8 @@
 
 #include <list>
 
-#include "ftest/test_logging.hpp"
+#include "container_test_mixin.hpp"
 #include "list.hpp"
-#include "test_utilities.hpp"
 
 class TestLwList : public ContainerTestDefaultMixin<TestLwList, lw_std::list, std::list> {
     friend ContainerTestDefaultMixin;

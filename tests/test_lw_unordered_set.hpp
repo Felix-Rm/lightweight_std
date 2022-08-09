@@ -2,8 +2,7 @@
 
 #include <unordered_set>
 
-#include "ftest/test_logging.hpp"
-#include "test_utilities.hpp"
+#include "container_test_mixin.hpp"
 #include "unordered_set.hpp"
 
 class TestLwUnorderedSet : public ContainerTestDefaultMixin<TestLwUnorderedSet, lw_std::unordered_set, std::unordered_set> {

@@ -2,8 +2,7 @@
 
 #include <vector>
 
-#include "ftest/test_logging.hpp"
-#include "test_utilities.hpp"
+#include "container_test_mixin.hpp"
 #include "vector.hpp"
 
 class TestLwVector : public ContainerTestDefaultMixin<TestLwVector, lw_std::vector, std::vector> {
