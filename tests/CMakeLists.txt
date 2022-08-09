@@ -4,7 +4,7 @@ enable_testing()
 if(NOT TARGET lw_std_test_suite)
     project(lw_std_test_suite)
 
-    add_executable(lw_std_test_suite testing.cpp)
+    add_executable(lw_std_test_suite testing.cpp container_tester/container_tester_helpers.cpp)
 
     target_compile_definitions(lw_std_test_suite PRIVATE LWSTD_BUILD_STD_COMPATIBILITY)
 
