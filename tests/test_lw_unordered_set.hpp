@@ -2,6 +2,7 @@
 
 #include <unordered_set>
 
+#include "compile_accelerators/accelerator_defs.hpp"
 #include "container_test_mixin.hpp"
 #include "unordered_set.hpp"
 
@@ -52,3 +53,5 @@ class TestLwUnorderedSet : public ContainerTestDefaultMixin<TestLwUnorderedSet, 
         return tester.run_operations(operation_count);
     }
 };
+
+extern LWSTD_TEST_ACCELERATE(TestLwUnorderedSet, unordered_set, int);

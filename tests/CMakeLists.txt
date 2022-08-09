@@ -4,7 +4,15 @@ enable_testing()
 if(NOT TARGET lw_std_test_suite)
     project(lw_std_test_suite)
 
-    add_executable(lw_std_test_suite testing.cpp container_tester/container_tester_helpers.cpp)
+    add_executable(lw_std_test_suite
+        testing.cpp
+        container_tester/container_tester_helpers.cpp
+        compile_accelerators/accelerate_vector.cpp
+        compile_accelerators/accelerate_list.cpp
+        compile_accelerators/accelerate_unordered_map.cpp
+        compile_accelerators/accelerate_unordered_set.cpp
+        compile_accelerators/accelerate_queue.cpp
+    )
 
     target_compile_definitions(lw_std_test_suite PRIVATE LWSTD_BUILD_STD_COMPATIBILITY)
 

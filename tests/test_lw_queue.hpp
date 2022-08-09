@@ -2,6 +2,7 @@
 
 #include <queue>
 
+#include "compile_accelerators/accelerator_defs.hpp"
 #include "container_test_mixin.hpp"
 #include "queue.hpp"
 
@@ -33,3 +34,6 @@ class TestLwQueue : public ContainerTestDefaultMixin<TestLwQueue, lw_std::queue,
         return tester.run_operations(operation_count);
     }
 };
+
+extern LWSTD_TEST_ACCELERATE(TestLwQueue, queue, int);
+extern LWSTD_TEST_ACCELERATE(TestLwQueue, queue, NonTrivial);

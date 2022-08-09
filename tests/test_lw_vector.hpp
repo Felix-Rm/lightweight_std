@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "compile_accelerators/accelerator_defs.hpp"
 #include "container_test_mixin.hpp"
 #include "vector.hpp"
 
@@ -67,3 +68,6 @@ class TestLwVector : public ContainerTestDefaultMixin<TestLwVector, lw_std::vect
         return tester.run_operations(operation_count);
     }
 };
+
+extern LWSTD_TEST_ACCELERATE(TestLwVector, vector, int);
+extern LWSTD_TEST_ACCELERATE(TestLwVector, vector, NonTrivial);

@@ -2,6 +2,7 @@
 
 #include <list>
 
+#include "compile_accelerators/accelerator_defs.hpp"
 #include "container_test_mixin.hpp"
 #include "list.hpp"
 
@@ -61,3 +62,6 @@ class TestLwList : public ContainerTestDefaultMixin<TestLwList, lw_std::list, st
         return tester.run_operations(operation_count);
     }
 };
+
+extern LWSTD_TEST_ACCELERATE(TestLwList, list, int);
+extern LWSTD_TEST_ACCELERATE(TestLwList, list, NonTrivial);

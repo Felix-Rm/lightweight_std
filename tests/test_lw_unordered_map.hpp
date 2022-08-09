@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 
+#include "compile_accelerators/accelerator_defs.hpp"
 #include "container_test_mixin.hpp"
 #include "unordered_map.hpp"
 
@@ -55,3 +56,6 @@ class TestLwUnorderedMap : public ContainerTestDefaultMixin<TestLwUnorderedMap, 
         return tester.run_operations(operation_count);
     }
 };
+
+extern LWSTD_TEST_ACCELERATE(TestLwUnorderedMap, unordered_map, int, int);
+extern LWSTD_TEST_ACCELERATE(TestLwUnorderedMap, unordered_map, int, NonTrivial);
