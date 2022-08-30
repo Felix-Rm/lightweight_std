@@ -1,4 +1,4 @@
-# IAC
+# lightweight_std
 
 [![build & test](https://github.com/Felix-Rm/lightweight_std/actions/workflows/cmake.yml/badge.svg)](https://github.com/Felix-Rm/lightweight_std/actions/workflows/cmake.yml)
 [![Sonar Cube Static Analysis](https://sonarcloud.io/api/project_badges/measure?project=Felix-Rm_lightweight_std&metric=ncloc)](https://sonarcloud.io/dashboard?id=Felix-Rm_lightweight_std)
